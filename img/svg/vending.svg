@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="80" height="100" viewBox="0 0 80 100" fill="none">
+<!-- Flat, offset floor shadow, matching the capsule machine. -->
+<ellipse cx="30" cy="87" rx="29" ry="8" fill="#000"/>
+<g stroke="#000" stroke-width=".8" stroke-linejoin="round">
+<path d="m22 10 12-8 38 6-12 8Z" fill="#dcecff"/>
+<path d="m60 16 12-8v80l-12 8Z" fill="#97bee8"/>
+<path d="m22 10 38 6v80l-38-6Z" fill="#bddbfa"/>
+<path d="m26 17 29 4v9l-29-4Z" fill="#ffb5eb"/>
+<path d="m27 34 23 3v32l-23-3Z" fill="#e9fbff"/>
+<path d="m27 49 23 3m-23 11 23 3"/>
+<g stroke-width=".55">
+<path d="m30 38 5 .6v9l-5-.6Z" fill="#fff47c"/><path d="m39 39 5 .6v9l-5-.6Z" fill="#ffb5eb"/>
+<path d="m30 53 5 .6v8l-5-.6Z" fill="#ffb5eb"/><path d="m39 54 5 .6v8l-5-.6Z" fill="#fff47c"/>
+<path d="m31 40 3 .4m6 .8 3 .4m-12 14 3 .4m6 .8 3 .4"/>
+</g>
+<path d="m54 36 3 .4v7l-3-.4Z" fill="#000"/>
+<circle cx="55.5" cy="50" r="2" fill="#fff47c"/>
+<circle cx="55.5" cy="57" r="2" fill="#ffb5eb"/>
+<path d="m29 76 24 3v11l-24-3Z" fill="#8cadd3"/>
+<path d="m32 80 18 2.3v4l-18-2.3Z" fill="#000"/>
+</g>
+<path d="m29 34 7 1" stroke="#fff" stroke-width="1.7" stroke-linecap="round"/>
+</svg>

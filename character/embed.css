@@ -12,3 +12,6 @@ img{-webkit-user-drag:none}
 
 /* Keep original resting baseline while exposing 15% more host-height below it. */
 .preview{height:62.5%;bottom:auto}
+
+/* Extend upward while keeping the original wardrobe preview's ground at 68% of the phone. */
+body.wardrobe-preview .preview{height:71.5789474%}

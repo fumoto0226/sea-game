@@ -13,3 +13,11 @@ Golden-frenzy integration adds a separate host-controlled phase player using the
 The parent now calls `advanceGoldenDance(dt, active)` on each game tick so pose animation remains visible when the embedded frame's own requestAnimationFrame is throttled. The child keeps standalone rAF playback as a fallback until host driving starts. Both use the same phase mapping, easing and geometry; main-game dt governs loop timing once embedded.
 
 For double-click/file:// support, the main page loads generated `embed-bundle.js` which populates iframe.srcdoc with the character document and styles/script inline. This makes the child inherit the parent origin instead of treating another local file as an isolated origin. After changing character source files, run `python3 character/build-embed.py`. The standalone character/index.html remains available for development.
+
+## 2026-10-22 clothing wardrobe integration
+
+The active runtime is `upstream/script.js`, packaged by `build-embed.py`. Clothing/skin geometry was selectively synchronized from GitHub/yuren, retaining the game's floor anchor, walk tracks, reset behavior and host dance/talk adapters. Source folder remains unmodified. `wardrobe-data.js` contains 67 clothing-only entries (including default skin) in filter order. `node scripts/sync-wardrobe-catalog.cjs [path-to-yuren]` refreshes catalog data and referenced thumbnails; rendering changes still require selective upstream synchronization and embed rebuild. No motion catalog is imported into the wardrobe.
+
+Host APIs: `characterWardrobeReady()`, `getCharacterOutfit()`, `restoreCharacterOutfit(outfit)`, and `toggleCharacterGarment(category,id)`. Saved outfits are validated against the actual decoration catalog. The game stores `state.outfit`; old saves start in milk-frog skin with no hat. Green tile fill means worn (including suit components), purple outline means most recently clicked. Removing a suit clears its garments while retaining the current skin per source rules.
+
+Wardrobe preview mode uses a full-height iframe from the top of the phone, with a body.wardrobe-preview child layout. The preview bottom stays at68% of phone height before its unchanged width-based padding: old23%+72%×62.5%, new95%×71.5789474%. This keeps soles/shadow stable and gives tall headgear room to extend under the fixed HUD instead of clipping at the old iframe top.

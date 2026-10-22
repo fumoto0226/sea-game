@@ -4078,11 +4078,11 @@ window.advanceGoldenDance=(dt,active)=>{
 
 window.setGoldenDance=setGoldenDance;
 
-// Guest fishman: a second copy of this document is embedded by the game, walks
+// Worker fishman: a second copy of this document is embedded by the game, walks
 // across the stage and waves. Walking is a looped cycle rather than a library
 // motion, so it has no rest frame at either end; the host drives it with the
 // game clock for the same reason the golden dance is host-driven.
-const guestWalkCycle = {
+const workerWalkCycle = {
   duration: .9,
   tracks: {
     // Feet step in opposition; the shallow lift keeps the planted foot from
@@ -4095,8 +4095,8 @@ const guestWalkCycle = {
     leftHand: [[0,9,-6],[.45,-9,-4],[.9,9,-6]],
   },
 };
-const guest = { mode: 'idle', clock: 0 };
-function guestPose(tracks, at, eased = true) {
+const worker = { mode: 'idle', clock: 0 };
+function workerPose(tracks, at, eased = true) {
   for (const [part, track] of Object.entries(tracks)) {
     let pose = dragPoses.find(entry => entry.part === part);
     if (!pose) { pose = createDragPose(part); dragPoses.push(pose); }
@@ -4104,23 +4104,23 @@ function guestPose(tracks, at, eased = true) {
   }
   update();
 }
-window.guestWaveDuration = motionLibrary.find(motion => motion.id === 'wave').duration;
+window.workerWaveDuration = motionLibrary.find(motion => motion.id === 'wave').duration;
 // mode: 'walk' loops the stride, 'back' runs the same stride in reverse so the
 // fishman retreats the way it came without turning round, 'wave' plays 打招呼
 // once from the moment the mode changes, anything else stands still.
-window.advanceGuestMotion = (dt, mode) => {
+window.advanceWorkerMotion = (dt, mode) => {
   if (!svg || !host.querySelector('svg')) return;
-  if (mode !== guest.mode) { guest.mode = mode; guest.clock = 0; stopMotion(); dragPoses.length = 0; }
-  guest.clock += Math.min(.25, Math.max(0, dt));
+  if (mode !== worker.mode) { worker.mode = mode; worker.clock = 0; stopMotion(); dragPoses.length = 0; }
+  worker.clock += Math.min(.25, Math.max(0, dt));
   if (mode === 'walk' || mode === 'back') {
-    const at = guest.clock % guestWalkCycle.duration;
-    guestPose(guestWalkCycle.tracks, mode === 'back' ? guestWalkCycle.duration - at : at);
+    const at = worker.clock % workerWalkCycle.duration;
+    workerPose(workerWalkCycle.tracks, mode === 'back' ? workerWalkCycle.duration - at : at);
   } else if (mode === 'wave') {
     const wave = motionLibrary.find(motion => motion.id === 'wave');
-    guestPose(wave.tracks, Math.min(guest.clock, wave.duration), wave.eased);
+    workerPose(wave.tracks, Math.min(worker.clock, wave.duration), wave.eased);
   } else if (dragPoses.length) {
     dragPoses.length = 0; update();
   }
 };
 // Original skin and original helmet: no suit, the plain helmet.
-window.setGuestLook = () => { selectDecoration('helmet', 'plain'); };
+window.setWorkerLook = () => { selectDecoration('helmet', 'plain'); };

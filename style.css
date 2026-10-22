@@ -78,6 +78,9 @@ h1 svg{stroke-width:1.2}.rank svg g{stroke-width:1}
 .bulk button{box-shadow:0 var(--toggle-depth) 0 #000;transform:translateY(calc(-1 * var(--toggle-depth)))}
 .bulk button[aria-pressed=true],.bulk button:active{box-shadow:none;transform:translateY(0)}
 .special-layer{position:absolute;inset:0;pointer-events:none;z-index:4}
+/* Workers are stacked by depth (z-index up to ~145), so a lucky or golden apple
+   has to sit above that whole range or an arriving fishman swallows the tap. */
+.special-layer{z-index:200}
 .special-apple{position:absolute;transform:translate(-50%,-50%);width:13cqw;padding:1cqw;border:0;background:none;pointer-events:auto;isolation:isolate;animation:special-wobble 1.8s ease-in-out infinite}
 .special-apple:before{content:'';position:absolute;inset:-1cqw;background:radial-gradient(circle,#fff5a6cf,transparent 68%);z-index:-1;border-radius:50%;scale:1.7}
 .special-apple img{width:100%;display:block;filter:drop-shadow(0 0 8px #ffd93c)}
@@ -216,24 +219,24 @@ h1 svg{stroke-width:1.2}.rank svg g{stroke-width:1}
 .frenzy-multiplier{-webkit-text-stroke:2.5px #4a280c;text-shadow:0 2px 0 #75400f,0 4px 0 #f4af18}
 .golden-frenzy #rate{margin-left:5cqw}
 
-/* Guest fishman: walks in from off-stage right, waves, walks back out. Same
+/* Worker fishman: walks in from off-stage right, waves, walks back out. Same
    frame geometry as the resident character so both stand on the same ground. */
-.fish-guest{position:absolute;top:calc(39% + var(--guest-y,0%));width:40%;height:40%;z-index:3;pointer-events:none;left:var(--guest-x,105%)}
+.fish-worker{position:absolute;top:calc(39% + var(--worker-y,0%));width:40%;height:40%;z-index:3;pointer-events:none;left:var(--worker-x,105%)}
 
 /* Shop tiles: the count and the price read as plain black text rather than
    white-on-outline, which the small sizes made muddy. */
 .tile .owned{color:#000;-webkit-text-stroke:0}
 .building .cost,.building.affordable .cost{color:#000;-webkit-text-stroke:0}
-/* The guest fishman gets a soft ellipse on the floor, a shade under the pink. */
+/* The worker fishman gets a soft ellipse on the floor, a shade under the pink. */
 /* Opaque, not translucent: two overlapping shadows must not darken each other.
    The resident fishman's frame has no wrapper of its own, so its shadow box is
    given the frame's exact geometry and the ellipse inside it is then placed with
-   the same numbers as a guest's — measuring one against the phone and one
+   the same numbers as a worker's — measuring one against the phone and one
    against the frame is what pulled the two out of step. */
 .fish-character-shadow{position:absolute;left:-4%;top:39%;width:40%;height:40%;z-index:0;pointer-events:none}
-.fish-guest-shadow,.fish-character-shadow:before{position:absolute;left:34%;top:56.2%;width:34%;height:4.8%;border-radius:50%;background:#ecc3d4;pointer-events:none}
+.fish-worker-shadow,.fish-character-shadow:before{position:absolute;left:34%;top:56.2%;width:34%;height:4.8%;border-radius:50%;background:#ecc3d4;pointer-events:none}
 .fish-character-shadow:before{content:''}
-.fish-guest>iframe{position:absolute;inset:0;width:100%;height:100%;border:0;background:transparent}
+.fish-worker>iframe{position:absolute;inset:0;width:100%;height:100%;border:0;background:transparent}
 
 /* Shop tiles: the glyphs are replaced by flat fishman icons, drawn large enough
    to read at tile size, with the name sitting under them. */
@@ -258,7 +261,7 @@ h1>span img{width:4.6cqw;height:4.6cqw;display:block}
 .golden-frenzy h1,.golden-frenzy h1>span{background-color:#fff9c5}
 .golden-frenzy .bulk button{background-color:#d9c552;color:#5b501e}
 .golden-frenzy .building:disabled .tile{background-color:#bbae78}
-.golden-frenzy .fish-guest-shadow,.golden-frenzy .fish-character-shadow:before{background:#e5d16b}
+.golden-frenzy .fish-worker-shadow,.golden-frenzy .fish-character-shadow:before{background:#e5d16b}
 /* Light is a separate screen-blended layer, not a yellow filter on the apple. */
 .special-apple{isolation:auto}.special-apple:before{display:none}.special-apple img{filter:none}
 .special-glow{position:absolute;width:29cqw;height:29cqw;transform:translate(-50%,-50%);z-index:3;pointer-events:none;mix-blend-mode:screen;background:radial-gradient(circle,#fffbd9e6 0%,#fff35ab3 20%,#fff35a4d 42%,transparent 70%);animation:special-light-breathe 1.4s ease-in-out infinite alternate}
@@ -329,8 +332,8 @@ h1>span img{width:4.6cqw;height:4.6cqw;display:block}
 .speech-measure{visibility:hidden;pointer-events:none}
 
 /* Shared visitor sprite animation; only the resident uses a live character iframe. */
-.fish-guest{left:0;will-change:transform}
-.guest-sprite{position:absolute;left:13.543478%;width:72.913044%;height:auto;bottom:37.5%;margin-bottom:-9.956522%;pointer-events:none}
+.fish-worker{left:0;will-change:transform}
+.worker-sprite{position:absolute;left:13.543478%;width:72.913044%;height:auto;bottom:37.5%;margin-bottom:-9.956522%;pointer-events:none}
 
 .special-reward[data-kind=lucky]{color:#FFF68A;-webkit-text-stroke:2px #000;paint-order:stroke fill;text-shadow:none;filter:none}
 
@@ -433,22 +436,16 @@ h1>span img{width:4.6cqw;height:4.6cqw;display:block}
 .phone.shop-open header,.phone.shop-open .balance,.phone.shop-open .rate{z-index:104}
 
 /* Fishman card: first tap explains the recruit, second one (or this button) hires. */
-.building-card{position:absolute;z-index:105;width:68cqw;max-width:68cqw;padding:3.4cqw 3.8cqw 3.2cqw;background:#fff;border:.25cqw solid #000;border-radius:3cqw;box-shadow:0 .8cqw #0003;color:#000}
-.card-head{display:flex;align-items:center;justify-content:space-between;gap:2cqw}
-.card-head b{font-size:5cqw;line-height:1}
-.card-price{display:flex;align-items:center;gap:1.2cqw;font-size:4.4cqw;font-weight:800;color:#b9f269;-webkit-text-stroke:.5px #000;paint-order:stroke fill}
-.card-price i{font-style:normal;font-size:2.2cqw;font-weight:700;color:#000;-webkit-text-stroke:0;border:.15cqw solid #66878d;border-radius:.5cqw;background:#e6ffff;padding:.1cqw .8cqw}
-.card-price img{width:4.4cqw;height:4.2cqw;object-fit:contain}
-.card-desc{margin:2.4cqw 0 0;font-size:3.1cqw;line-height:1.5;font-weight:700}
-.building-card hr{border:0;border-top:.15cqw solid #c9c9c9;margin:3cqw 0}
-.card-line{margin:0 0 2cqw;font-size:3.1cqw;font-weight:700;line-height:1.3}
-.card-line:last-of-type{margin-bottom:0}
-.card-buy{display:block;margin:2.6cqw 0 0 auto;padding:1.2cqw 4cqw;font-size:3.2cqw;font-weight:800;border:.2cqw solid #000;border-radius:2cqw;background:#d1ff81;box-shadow:0 .5cqw #000}
-.card-buy:active{transform:translateY(.4cqw);box-shadow:none}
-.card-buy:disabled{background:#e4e4e4;opacity:1}
-.recruit-hint{display:none;font-size:1.9cqw;font-weight:800;margin-top:2cqw;line-height:1.2;white-space:nowrap;color:#000}
-.building.picked .recruit-hint{display:block}
-.building.picked .label{display:none}
+
+
+
+
+
+
+
+
+
+
 
 /* DEMO item catalogue: a plain list of every upgrade, for looking at only. */
 .catalog-dialog{width:min(92vw,560px);max-height:86dvh;padding:18px;border:2px solid #000;border-radius:18px;background:#fffdf7;color:#20242a;overflow:auto}
@@ -486,10 +483,8 @@ h1>span img{width:4.6cqw;height:4.6cqw;display:block}
 .catalog-status[data-state=locked]{background:#e3e6ea;color:#5c6168}
 
 /* Recruit confirmation is only highlighted while this batch is affordable. */
-.building.picked:not(.affordable) .tile{background:#cdcee9}
-.building.picked:not(.affordable) .recruit-hint{display:none}
-.building.picked:not(.affordable) .label{display:block}
-.card-price{color:#000;-webkit-text-fill-color:#000;-webkit-text-stroke:0;text-shadow:none}
+
+
 
 /* The left unit stays fixed; the white value bay expands with its text. */
 .rate,.golden-frenzy .rate{display:flex;width:max-content;min-width:30cqw;gap:0;transform-origin:left center}
@@ -524,3 +519,324 @@ h1>span img{width:4.6cqw;height:4.6cqw;display:block}
 .rate .frenzy-badge{right:calc(100% - 88cqw + 2px);background:#FCF043;border-radius:1cqw;box-shadow:inset 0 1px 0 #fff9a6,0 2px 0 #b89000,0 3px 0 #000}
 .rate .frenzy-multiplier{animation:frenzy-sign-seven .24s ease-in-out infinite alternate;transform-origin:center}
 @keyframes frenzy-sign-seven{from{transform:translate(-.4px,.3px) rotate(-6deg) scale(.98)}to{transform:translate(.4px,-.3px) rotate(6deg) scale(1.06)}}
+
+/* Golden frenzy: the rising numbers emit light instead of dropping a flat
+   brown shadow. The halo rides in its own copy of the number, a direct child
+   of the effects layer, so halos composite additively with each other — a
+   cluster of numbers builds one bright core instead of a muddy stack of
+   shadows. The glyph itself keeps normal compositing and its dark outline,
+   which additive blending would erase. */
+.frenzy-number{color:#fff5a0;text-shadow:0 0 .22em #ffb727}
+.frenzy-glow{mix-blend-mode:plus-lighter;color:#ffca3d;-webkit-text-stroke:0;text-shadow:0 0 .3em #ffc02f,0 0 .85em #ff9b18,0 0 1.6em #ff8a0099;filter:blur(1.5px)}
+.frenzy-glow .reward-impact{filter:none}
+
+/* Fish recruitment tags: two ranks per supplied silhouette, direct purchase. */
+.building-shop,.golden-frenzy .building-shop{background-color:#9A9AA3;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='76' viewBox='0 0 200 76'%3E%3Cpath d='M0 0H200M0 38H200M0 76H200M0 0V38M100 0V38M200 0V38M50 38V76M150 38V76' fill='none' stroke='%23404D56' stroke-width='1'/%3E%3C/svg%3E");background-size:22cqw 8.36cqw;padding-top:0}
+.building-shop .shop-head{height:8cqw;padding:0 4.2cqw;align-items:center}
+.building-shop h1,.golden-frenzy .building-shop h1{width:38cqw;height:8.2cqw;align-self:flex-start;margin-top:-2.5cqw;padding:0;border:0;border-radius:0;background:none;box-shadow:none}
+.building-shop h1>img{display:block;width:100%;height:100%;object-fit:contain}
+.building-shop .bulk{gap:1.7cqw;font-size:1.8cqw}
+.building-shop .bulk button{background:#AEAEAE;color:#555;border:1px solid #000;box-shadow:0 .25cqw #000;padding:0 1.5cqw;font-size:2.1cqw}
+.building-shop .bulk button[aria-pressed=true]{background:#fff;color:#000}
+.building-list{gap:5cqw;padding:.5cqw 7.8cqw 2cqw;align-items:flex-start}
+.building{flex:0 0 17cqw;width:17cqw;opacity:1!important;padding:0;border:0;background:none}
+.building .tile,.golden-frenzy .building .tile,.building.locked .tile{--tag-color:#AEAEAE;position:relative;display:block;height:16.8cqw;padding:0;border:0;border-radius:0;background:none!important;box-shadow:none;overflow:visible}
+.building.affordable .tile{--tag-color:#CCDC45}
+.building.locked .tile{--tag-color:#515151}
+.building .tile:before{display:none}
+.tag-shape{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.building .tile .icon{position:absolute;top:3cqw;left:3.5cqw;width:10cqw;height:9.5cqw;margin:0;display:block;line-height:1}
+.building .tile .icon img{display:block;width:100%;height:100%;object-fit:contain;filter:none}
+.building.locked .tile .icon img{filter:brightness(0)}
+.building .tile .owned{position:absolute;top:0;right:-.6cqw;font-size:5.5cqw;font-weight:700;color:#fff;-webkit-text-stroke:.25cqw #000;paint-order:stroke fill;z-index:1}
+.building .tile .gain{position:absolute;display:block;bottom:1.3cqw;left:0;width:100%;margin:0;color:#000;font-size:2.15cqw;font-weight:500;line-height:1;text-align:center;white-space:nowrap}
+.building .cost,.building.affordable .cost,.golden-frenzy .building .cost{position:relative;height:5.8cqw;margin-top:1.4cqw;gap:.8cqw;color:#000;font-size:2.4cqw;line-height:1;-webkit-text-stroke:0;filter:none}
+.price-outline{position:absolute;inset:0;width:100%;height:100%;z-index:-1;filter:drop-shadow(0 .25cqw 0 #000)}
+.building .cost{isolation:isolate}
+.building .cost img{width:3.4cqw;height:3.2cqw;object-fit:contain}
+.building:active:not(:disabled){transform:translateY(.25cqw)}
+.building-shop h1 b{position:absolute;inset:0;display:grid;place-items:center;padding-left:1cqw;padding-bottom:.4cqw;font-size:2.8cqw;font-weight:500;color:#000}
+
+/* Original composed fish3 artwork: preserve the artist's internal placement. */
+.building .tag-shape{inset:0 auto auto 50%;height:auto;width:17cqw;transform:translateX(-50%)}
+.building:nth-child(-n+2) .tag-shape{width:15.725cqw}
+.building:nth-child(n+3):nth-child(-n+4) .tag-shape{width:16.15cqw}
+.building:nth-child(n+5):nth-child(-n+6) .tag-shape{width:14.45cqw}
+.building.locked .tag-art{filter:brightness(0)}
+.building .tile{height:16.6cqw}
+.building .tile .gain{top:13.05cqw;bottom:auto;font-size:2cqw;line-height:1}
+.building:nth-child(n+3):nth-child(-n+6) .tile .gain{top:12.55cqw}
+.building:nth-child(n+7) .tile .gain{top:13.7cqw}
+.building .cost{margin-top:.3cqw;height:5.8cqw;font-size:2.2cqw;gap:.9cqw}
+.building:nth-child(n+7) .cost{margin-top:.9cqw}
+.building .tile .owned{top:-.2cqw;right:-.3cqw;font-size:5.3cqw}
+.building .tile .gain{top:12.4cqw}
+.building:nth-child(n+7) .tile .gain{top:13.5cqw}
+.building .cost,.building.affordable .cost,.golden-frenzy .building .cost{margin-top:.3cqw;font-size:2.2cqw}
+.building:nth-child(n+7) .cost{margin-top:.9cqw}
+
+/* Updated reference counts: bold white sans-serif with a crisp black outline. */
+.building .tile .owned{top:-.15cqw;right:-.4cqw;font-family:Arial,sans-serif;font-size:5.2cqw;font-weight:700;line-height:1;color:#fff;-webkit-text-stroke:.2cqw #000;paint-order:stroke fill;text-shadow:none;letter-spacing:-.2cqw}
+.building .tile .owned{-webkit-text-stroke:.4cqw #000}
+.building:nth-child(n+3):nth-child(-n+6) .tile .gain{top:11.9cqw}
+.building:nth-child(n+7) .tile .gain{top:13cqw}
+
+/* Anchor every supplied tag to the same floor, regardless of its silhouette. */
+.building .tile .tag-shape{top:auto;bottom:0}
+.building .tile .gain,
+.building:nth-child(n+3):nth-child(-n+6) .tile .gain,
+.building:nth-child(n+7) .tile .gain{top:auto;bottom:1.2cqw}
+.building .cost,.building.affordable .cost,.golden-frenzy .building .cost,
+.building:nth-child(n+7) .cost{margin-top:.7cqw}
+
+/* The sign covers the market rim; only the hanging tag responds to a purchase. */
+.building-shop h1{z-index:4}
+.building:active:not(:disabled){transform:none}
+.tag-motion{position:absolute;inset:0;display:block;pointer-events:none}
+
+/* DEMO: the arrival animation on demand, one row per fishman. Twenty small
+   buttons join the apple tests in the same column, which starts higher up to
+   make room, and keep the panel's raised-button look a size down. */
+.debug-events{top:7%;gap:12px;flex-direction:row;flex-wrap:wrap;align-items:flex-start;width:auto;max-width:calc(50% - 26.3dvh - 32px)}
+.demo-column{display:flex;flex-direction:column;gap:9px;width:160px}
+.demo-column:last-child{width:142px}
+.debug-events p{margin:0}
+.spawn-grid{display:grid;grid-template-columns:1fr 46px;gap:5px}
+.spawn-grid button{background:#fff9d2;border:1px solid #29323e;border-radius:6px;padding:5px 2px;box-shadow:0 2px #29323e;color:#263656;font-size:11px;white-space:nowrap}
+.spawn-grid button:active{transform:translateY(2px);box-shadow:none}
+
+/* Permanent upgrades belong to the employee, next to recruitment. */
+.vending-entry{visibility:hidden;pointer-events:none}
+.building{position:relative;display:flex;flex-direction:column;align-items:stretch}
+.building .tile{flex:none}
+.recruit-hit{position:absolute;inset:0;z-index:2;width:100%;height:100%;border:0;background:none;padding:0;pointer-events:auto}
+.building .fish-upgrade{position:absolute;top:-.6cqw;left:-1.5cqw;z-index:4;width:5.2cqw;height:6cqw;border:0;background:none;padding:0;color:#AEAEAE;pointer-events:auto;filter:drop-shadow(0 .3cqw #0005)}
+.building .fish-upgrade svg{display:block;width:100%;height:100%;pointer-events:none}
+.building .fish-upgrade.can-upgrade{color:#70dc48}
+.building .fish-upgrade:active{transform:translateY(.2cqw)}
+.fish-upgrade-dialog{width:min(88vw,430px);padding:28px 24px 24px;border:2px solid #000;border-radius:22px;background:#fffef0;color:#000;box-shadow:0 5px #000;overflow:visible}
+.fish-upgrade-dialog::backdrop{background:#142c5070}
+.fish-upgrade-dialog h2{font-size:24px;margin:0 38px 22px 0}
+.fish-upgrade-dialog h3{font-size:21px;margin:0 0 14px}
+.fish-upgrade-dialog p{font-size:18px;line-height:1.6;margin:0 0 22px}
+.upgrade-close{position:absolute;right:14px;top:12px;width:34px;height:34px;border:1px solid #000;border-radius:50%;background:#efb8f3;font-size:27px;line-height:1}
+.upgrade-price{display:flex;gap:10px;align-items:center;justify-content:center;font-size:24px;margin-bottom:20px}
+.upgrade-price img{width:30px;height:30px;object-fit:contain}
+#confirmFishUpgrade{width:100%;padding:12px;border:2px solid #000;border-radius:12px;background:#CCDC45;box-shadow:0 3px #000;font-size:21px;font-weight:bold}
+#confirmFishUpgrade:disabled{background:#AEAEAE;color:#555;opacity:1;cursor:default}
+
+/* A small level plate remains visible; the arrow is only a status cue. */
+.building .fish-upgrade{left:-1.1cqw;top:-.1cqw;width:auto;height:3.8cqw;display:flex;align-items:center;gap:.35cqw;filter:none;color:#AEAEAE}
+.fish-level{display:block;font:700 2cqw/1.3 Arial,sans-serif;background:#fffef0;border:1px solid #000;border-radius:.6cqw;padding:.1cqw .45cqw;color:#000;white-space:nowrap}
+.building .fish-upgrade svg{width:2.7cqw;height:3.3cqw;overflow:visible}
+.fish-dialog-level{font-weight:bold;background:#eef8de;padding:8px 10px;border:1px solid #000;border-radius:8px}
+.factory-entry{position:absolute;z-index:8;top:25%;right:5.5%;width:32cqw;padding:1.5cqw 1.7cqw 1.3cqw;border:1px solid #000;border-radius:2cqw;background:#fffef0;box-shadow:0 .5cqw #000;text-align:left;color:#000}
+.factory-entry-head{display:flex;align-items:center;gap:1cqw;margin-bottom:1cqw}
+.factory-entry-head img{width:6cqw;height:5.5cqw;object-fit:contain}
+.factory-entry-head b{font-size:2.8cqw;white-space:nowrap}
+.factory-entry-head i{font:700 2.1cqw Arial,sans-serif;margin-left:auto;font-style:normal}
+.factory-entry-track{display:block;height:2.6cqw;border:1px solid #000;border-radius:1cqw;background:#fff;overflow:hidden}
+#factoryProgressFill{display:block;height:100%;width:0;background:#CCDC45;transition:width .25s ease}
+#factoryProgressLabel{display:block;text-align:center;font-size:2cqw;margin-top:.7cqw;font-weight:bold}
+.factory-stage-track{height:22px;border:1px solid #000;border-radius:8px;overflow:hidden;background:#fff;margin:0 0 22px}
+#factoryStageFill{height:100%;background:#CCDC45;transition:width .25s ease}
+#confirmFactoryUpgrade{width:100%;padding:12px;border:2px solid #000;border-radius:12px;background:#CCDC45;box-shadow:0 3px #000;font-size:21px;font-weight:bold}
+#confirmFactoryUpgrade:disabled{background:#AEAEAE;color:#555;opacity:1}
+#factoryNextHint{font-size:14px;margin:18px 0 0;color:#555}
+#factoryNextEffect{font-weight:bold}
+#openGacha{position:relative}
+#openGacha .wardrobe-label{position:absolute;bottom:-1cqw;left:5cqw;padding:.1cqw 1cqw;background:#fffef0;border:1px solid #000;border-radius:.5cqw;font-size:2.2cqw;color:#000}
+.factory-entry-head b{font-size:3.2cqw}
+#factoryProgressLabel{font-size:2.5cqw}
+#factoryMilestone{padding:10px;border:1px solid #000;border-radius:8px;background:#CCDC45;font-weight:bold}
+
+/* Compact upgrade windows stay inside the centered game column. */
+.fish-upgrade-dialog{width:min(360px,calc(var(--upgrade-game-width,390px)*.8));max-width:calc(100vw - 32px);max-height:80dvh;overflow:auto;padding:22px 20px 20px;border-radius:18px;box-shadow:0 4px #000}
+.fish-upgrade-dialog h2{font-size:20px;margin:0 32px 14px 0;line-height:1.4}
+.fish-upgrade-dialog p{font-size:16px;line-height:1.55;margin-bottom:14px}
+.fish-upgrade-dialog .upgrade-close{width:28px;height:28px;top:12px;right:12px;font-size:23px}
+#fishUpgradeName,#factoryNextName,#factoryStageCount,#factoryNextHint{display:none}
+.fish-upgrade-dialog .upgrade-caption{font-size:13px;color:#555;text-align:center;margin:14px 0 6px}
+#factoryNextEffect,#fishUpgradeEffect{text-align:center;font-size:18px;font-weight:bold;margin:0 0 16px}
+.fish-upgrade-dialog .upgrade-price{font-size:22px;margin-bottom:16px;gap:8px}
+.fish-upgrade-dialog .upgrade-price img{width:27px;height:27px}
+#confirmFactoryUpgrade,#confirmFishUpgrade{font-size:18px;padding:10px;border-width:1px;border-radius:10px;box-shadow:0 2px #000}
+.fish-dialog-level{text-align:center;padding:6px 8px;font-size:15px!important}
+.factory-entry{top:calc(16% + 2px)}
+.factory-entry-track{position:relative;height:3.7cqw;border-radius:.8cqw}
+#factoryProgressLabel{position:absolute;inset:0;margin:0;display:grid;place-items:center;font:700 2.2cqw/1 Arial,sans-serif}
+.factory-stage-track{position:relative;height:25px;margin:0 0 18px}
+#factoryStageProgress{position:absolute;inset:0;display:grid;place-items:center;font:700 14px Arial,sans-serif}
+.wardrobe-entry{visibility:visible;pointer-events:auto}
+.wardrobe-entry #openShop{position:relative}
+#vendingDot{display:none!important}
+.actions .action-caption{position:absolute;bottom:-.5cqw;left:50%;transform:translateX(-50%);padding:.1cqw 1cqw;background:#fffef0;border:1px solid #000;border-radius:.5cqw;font-size:2.2cqw;line-height:1.4;color:#000;white-space:nowrap}
+.rate .frenzy-badge{margin-top:15cqw}
+/* The rate labels sit one physical pixel higher; geometry and real rates stay intact. */
+.building .tile .gain{translate:0 -1px}
+
+/* Wardrobe changes the lower scene while the existing header/HUD remain mounted. */
+.phone.wardrobe-open,.phone.wardrobe-open.golden-frenzy{background:#fbd9e7}
+.wardrobe-open .stage,.wardrobe-open .actions,.wardrobe-open .building-shop,
+.wardrobe-open .fish-worker,.wardrobe-open .purchase-speech,.wardrobe-open .rate-gain,
+.wardrobe-open .special-layer,.wardrobe-open .special-glow,.wardrobe-open .gold-waterfall,
+.wardrobe-open .gold-rain,.wardrobe-open .button-aura,.wardrobe-open .gold-edge-glow{visibility:hidden!important;pointer-events:none!important}
+.wardrobe-open .fish-character{left:-5%;top:20%;width:110%;height:78%;z-index:12}
+.wardrobe-open .fish-character-shadow{left:-5%;top:20%;width:110%;height:78%;z-index:11}
+.wardrobe-open .fish-character-shadow:before{background:#eac1d2}
+.wardrobe-view{position:absolute;inset:0;z-index:20;pointer-events:none}
+.wardrobe-back{position:absolute;right:6%;bottom:31.5%;display:flex;flex-direction:column;align-items:center;gap:.9cqw;background:none;border:0;padding:1cqw;color:#175cc9;pointer-events:auto}
+.wardrobe-back svg{width:6.5cqw;height:5.5cqw;overflow:visible}
+.wardrobe-back span{font-size:2.5cqw;color:#000;font-weight:bold}
+.wardrobe-back:active{transform:translateY(1px)}
+.wardrobe-inventory{position:absolute;left:0;right:0;bottom:0;top:70%;display:flex;flex-direction:column;border:1px solid #000;border-bottom:0;border-radius:4cqw 4cqw 0 0;background:#c4c4cb;pointer-events:auto;overflow:visible;box-shadow:inset 0 1px #fff8}
+.wardrobe-toolbar{display:flex;align-items:center;justify-content:space-between;padding:1.6cqw 4cqw 1.5cqw;flex-shrink:0;min-height:8.5cqw}
+.wardrobe-toolbar h2{position:relative;margin:0;display:flex;align-items:center;gap:1.4cqw;font-size:3cqw;line-height:1;font-weight:500}
+.wardrobe-toolbar h2 svg{width:8cqw;height:7.5cqw;margin-top:-4cqw;overflow:visible;filter:drop-shadow(0 1px #000)}
+.wardrobe-filter select{font:inherit;font-size:2.6cqw;color:#000;background:#fffef0;border:1px solid #000;border-radius:.7cqw;padding:.45cqw 1.5cqw;min-width:14cqw;box-shadow:0 .25cqw #000;cursor:pointer}
+.wardrobe-scroll{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;padding:1cqw 4cqw 3cqw;overscroll-behavior:contain;touch-action:pan-y;scrollbar-width:thin;scrollbar-color:#858995 transparent;border-radius:0 0 0 0}
+.wardrobe-slots{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:2cqw}
+.wardrobe-slot{display:block;aspect-ratio:1/1;background:#f7f5ee;border:1px solid #a1a1ab;border-radius:.8cqw;box-shadow:0 .25cqw #aaaab4}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.wardrobe-open .actions *{visibility:hidden!important;pointer-events:none!important}
+/* Override the home scene's inline depth ordering while previewing clothing. */
+.wardrobe-open .fish-character{z-index:1!important}
+.wardrobe-open .fish-character-shadow{z-index:0!important}
+
+/* Shared illustrated exits and the wardrobe's own two side actions. */
+.outdoor-button:disabled{opacity:1;cursor:default;transform:none!important}
+.wardrobe-side-actions{position:absolute;inset:0;pointer-events:none}
+.wardrobe-side{position:absolute;bottom:31.5%;width:16cqw;height:22cqw;border:0;background:none;padding:0;pointer-events:auto}
+.wardrobe-side img{display:block;width:100%;height:100%;object-fit:contain;pointer-events:none}
+.wardrobe-gacha{left:6%}
+.wardrobe-outdoor{right:6%}
+.wardrobe-side .action-caption{position:absolute;bottom:-.3cqw;left:50%;transform:translateX(-50%);padding:.1cqw 1cqw;background:#fffef0;border:1px solid #000;border-radius:.5cqw;font-size:2.2cqw;color:#000;white-space:nowrap}
+.wardrobe-back{right:9%;bottom:43%;gap:.6cqw}
+.wardrobe-open .fish-character,.wardrobe-open .fish-character-shadow{left:0;top:23%;width:100%;height:72%}
+.wardrobe-open .fish-character-shadow:before{top:54.8%}
+/* Site-styled category picker, opening upwards within the game. */
+.wardrobe-filter{position:relative;z-index:4}
+#wardrobeFilter{display:flex;align-items:center;justify-content:space-between;gap:2cqw;min-width:15cqw;padding:.7cqw 1.5cqw;border:1px solid #000;border-radius:.7cqw;background:#fffef0;box-shadow:0 .25cqw #000;font:inherit;font-size:2.6cqw;color:#000}
+#wardrobeFilter svg{width:2cqw;height:1.2cqw;pointer-events:none}
+.wardrobe-filter-menu{position:absolute;right:0;bottom:calc(100% + 1.5cqw);width:23cqw;max-height:65cqw;overflow-y:auto;padding:1cqw;background:#fffef0;border:1px solid #000;border-radius:1.2cqw;box-shadow:0 .5cqw #000;overscroll-behavior:contain;scrollbar-width:thin}
+.wardrobe-filter-menu button{display:block;width:100%;padding:1cqw 1.5cqw;border:1px solid transparent;border-radius:.6cqw;background:none;color:#000;font:inherit;font-size:2.6cqw;text-align:left}
+.wardrobe-filter-menu button[aria-selected=true]{background:#CCDC45;border-color:#000}
+.wardrobe-filter-menu button:hover{background:#e5edab}
+.phone,.phone *,dialog,dialog *{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.phone img{-webkit-user-drag:none}
+.factory-can-upgrade{flex:0 0 2.7cqw;width:2.7cqw;height:3.3cqw;overflow:visible}
+.factory-entry-head{gap:.65cqw}
+.wardrobe-legend{display:flex;align-items:center;justify-content:space-between;gap:1cqw;margin:-.5cqw 4cqw 1.5cqw;font-size:1.9cqw;line-height:1.4;color:#36373d}
+.wardrobe-legend>span:last-child{display:flex;align-items:center;gap:.6cqw;white-space:nowrap}
+.wardrobe-legend i{display:inline-block;width:1.8cqw;height:1.8cqw;border:1px solid #777;border-radius:.3cqw}
+.wearing-key{background:#CBFF8D}
+.wardrobe-legend .selected-key{background:#fff;border:1.5px solid #9951c8}
+.wardrobe-slots{display:block}
+.wardrobe-group{margin-bottom:2.5cqw}
+.wardrobe-group h3{margin:0 0 1.2cqw;font-size:2.3cqw;line-height:1.4;font-weight:500;color:#34353a}
+.wardrobe-group-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:2cqw}
+.wardrobe-item{position:relative;display:grid;place-items:center;aspect-ratio:1;min-width:0;padding:.7cqw;background:#f7f5ee;border:1px solid #9898a4;border-radius:.8cqw;box-shadow:0 .25cqw #aaaab4;cursor:pointer}
+.wardrobe-item img{display:block;width:100%;height:100%;max-height:10cqw;object-fit:contain;pointer-events:none}
+.wardrobe-item.wearing{background:#CBFF8D;border-color:#6d923e}
+.wardrobe-item.selected{outline:2px solid #9951c8;outline-offset:1px}
+.wardrobe-item:active{transform:translateY(1px)}
+
+/* Two direct tabs, compact tinted category blocks, and a full-height preview canvas. */
+.wardrobe-toolbar{padding:1.2cqw 3cqw 1cqw;min-height:7cqw}
+.wardrobe-tabs{display:flex;gap:1cqw}
+.wardrobe-tabs button{min-width:13cqw;padding:.65cqw 1.4cqw;background:#fffef0;border:1px solid #000;border-radius:.7cqw;box-shadow:0 .25cqw #000;font:inherit;font-size:2.6cqw;color:#000}
+.wardrobe-tabs button[aria-pressed=true]{background:#CCDC45}
+.wardrobe-legend{justify-content:flex-end;margin:-.4cqw 3cqw .7cqw}
+.wardrobe-scroll{padding:.5cqw 3cqw 2cqw}
+.wardrobe-group{--category-accent:#af9acb;--category-wash:#f0eafa;display:grid;grid-template-columns:5.3cqw minmax(0,1fr);margin-bottom:1.1cqw;background:var(--category-wash);border:1px solid var(--category-accent);border-radius:.9cqw;overflow:visible}
+.wardrobe-group h3{margin:0;padding:1cqw .9cqw;writing-mode:vertical-rl;text-orientation:upright;text-align:start;font-size:2.4cqw;line-height:1.35;color:#242631;letter-spacing:.15cqw;background:var(--category-accent);border-radius:.7cqw 0 0 .7cqw}
+.wardrobe-group-grid{padding:1cqw;gap:1cqw;align-content:start}
+.wardrobe-item{padding:.45cqw;box-shadow:0 .15cqw #aaaab4}
+.wardrobe-item.selected{outline-width:1.5px;outline-offset:.5px}
+.wardrobe-group[data-clothing-category=skin]{--category-accent:#d5b77b;--category-wash:#fbf0da}
+.wardrobe-group[data-clothing-category=helmet]{--category-accent:#94b4d6;--category-wash:#e7f0fa}
+.wardrobe-group[data-clothing-category=neck]{--category-accent:#d4a0bb;--category-wash:#f9eaf2}
+.wardrobe-group[data-clothing-category=shirt]{--category-accent:#a3bd88;--category-wash:#edf5e4}
+.wardrobe-group[data-clothing-category=pants]{--category-accent:#98a9d1;--category-wash:#e9edf9}
+.wardrobe-group[data-clothing-category=outerwear]{--category-accent:#d7af85;--category-wash:#faf0e2}
+.wardrobe-group[data-clothing-category=shoes]{--category-accent:#b89bd1;--category-wash:#f1e7fa}
+.wardrobe-group[data-clothing-category=cape]{--category-accent:#d39fa2;--category-wash:#f9e9ea}
+.wardrobe-group[data-clothing-category=gloves]{--category-accent:#91b9aa;--category-wash:#e6f4ed}
+/* Same preview width and foot position; extra iframe area above stops tall hats clipping. */
+.wardrobe-open .fish-character{top:0;height:95%}
+.wardrobe-tabs{align-items:center}
+.wardrobe-tabs #clearWardrobe{min-width:0;font-size:2.3cqw;padding:.8cqw 1.3cqw;white-space:nowrap}
+.wardrobe-tab-divider{height:4cqw;border-left:1px solid #777;margin:0 .4cqw}
+/* Lift the wardrobe controls/panel together, leaving the character ground unchanged. */
+.wardrobe-inventory{top:67%}
+.wardrobe-side{bottom:34.5%}
+.wardrobe-back{bottom:46%}
+.outdoor-button:active{transform:translateY(1px)}
+
+#fishUpgradeEffect{white-space:pre-line}
+
+#openNewFactory{width:100%;margin-top:14px;padding:10px;border:1px solid #000;border-radius:10px;background:#d6a6ef;color:#000;box-shadow:0 2px #000;font-size:18px;font-weight:bold}
+#openNewFactory:active{transform:translateY(2px);box-shadow:none}
+#newFactoryNotice{text-align:center;margin:12px 0 0;font-size:15px;color:#49325d}
+
+#fishUpgradeEffect .upgrade-key-effect{display:block;color:#000;font-size:18px;font-weight:bold;line-height:1.5}
+#fishUpgradeEffect .upgrade-key-values{display:block;margin-top:4px;font-size:23px;color:#000}
+#fishUpgradeEffect .upgrade-estimate{display:block;margin-top:16px;padding:12px;background:#edf5fa;border:1px solid #c0d8e7;border-radius:10px;color:#6c879b;font-size:12px;font-weight:normal;line-height:1.5;white-space:normal}
+#fishUpgradeEffect .upgrade-estimate-title{display:block;font-size:12px;font-weight:bold;letter-spacing:1px}
+#fishUpgradeEffect .upgrade-estimate-note{display:block;margin:2px 0 10px;font-size:11px;color:#7892a4}
+#fishUpgradeEffect .upgrade-estimate-row{display:block;margin-top:9px}
+#fishUpgradeEffect .upgrade-estimate-label{display:block}
+#fishUpgradeEffect .upgrade-estimate-values{display:block;font-size:19px;font-weight:bold;line-height:1.4;color:#245d86}
+#fishUpgradeEffect .upgrade-estimate-unit{display:block;font-size:11px}
+
+#fishUpgradeEffect .upgrade-estimate{background:#f0f0ef;border-color:#d2d2d0;color:#656565}
+#fishUpgradeEffect .upgrade-estimate-note{color:#777}
+#fishUpgradeEffect .upgrade-estimate-values{color:#8742ad}
+.play-time{margin-top:16px;text-align:center;color:#29323e;line-height:1.5}
+.play-time span{display:block;font-size:13px}
+.play-time strong{display:block;font-size:21px;font-variant-numeric:tabular-nums;letter-spacing:1px}
+/* Factory level splits: deep purple. Measured against the page's periwinkle it
+   carries almost twice as far as a green of the same weight (3.9:1 vs 2.1:1),
+   and a brighter green all but vanishes on this background. */
+.level-times{margin-top:10px;display:grid;gap:3px;color:#5a189a}
+.level-times span{display:flex;justify-content:center;gap:8px;font-size:13px;line-height:1.45}
+.level-times i{font-style:normal;font-weight:700}
+.level-times b{font-variant-numeric:tabular-nums;letter-spacing:.5px}
+
+#fishUpgradeEffect .upgrade-click-effect{display:block;margin-top:6px}
+
+/* Compact upgrade typography and clearly separated estimate heading. */
+.fish-upgrade-dialog h2{font-size:18px;margin-right:34px}
+#factoryNextEffect,#fishUpgradeEffect,#fishUpgradeEffect .upgrade-key-effect{font-size:16px}
+#fishUpgradeEffect .upgrade-key-values{font-size:20px;margin-top:2px}
+.fish-upgrade-dialog .upgrade-price{font-size:20px;margin-bottom:12px}
+#confirmFactoryUpgrade,#confirmFishUpgrade,#openNewFactory{font-size:16px}
+#fishUpgradeEffect .upgrade-estimate{margin-top:12px;padding:0 10px 9px;overflow:hidden}
+#fishUpgradeEffect .upgrade-estimate-title{margin:0 -10px 6px;padding:4px 10px;background:#8742ad;color:#fff;font-size:11px;line-height:1.4;letter-spacing:0}
+#fishUpgradeEffect .upgrade-estimate-note{margin:0 0 5px;font-size:10px}
+#fishUpgradeEffect .upgrade-estimate-row{margin-top:5px}
+#fishUpgradeEffect .upgrade-estimate-label{font-size:11px;line-height:1.35}
+#fishUpgradeEffect .upgrade-estimate-values{font-size:17px;line-height:1.3}
+#fishUpgradeEffect .upgrade-estimate-unit{font-size:10px;line-height:1.3}
+.fish-upgrade-dialog .upgrade-close{top:12px;right:12px;width:30px;height:30px;padding:0;font-size:0;line-height:0;box-shadow:none}
+.fish-upgrade-dialog .upgrade-close:before,.fish-upgrade-dialog .upgrade-close:after{content:'';position:absolute;left:20%;top:calc(50% - .5px);width:60%;height:1px;background:#000;transform:rotate(45deg)}
+.fish-upgrade-dialog .upgrade-close:after{transform:rotate(-45deg)}
+.fish-upgrade-dialog .upgrade-close:focus-visible{outline:none;box-shadow:inset 0 0 0 1px #000}
+
+.fish-upgrade-dialog .factory-coin-reward{display:table;margin:8px auto 14px;padding:5px 12px;border:1px solid #c8b1d5;border-radius:8px;background:#f1e7f7;color:#76508c;font-size:12px;line-height:1.4}
+.factory-coin-reward b{margin-left:8px;color:#8742ad}
+
+.factory-hud{position:absolute;z-index:8;top:calc(16% + 2px);right:5.5%;width:32cqw}
+.factory-hud .factory-entry{position:relative;top:auto;right:auto;width:100%;display:block}
+.quick-factory-upgrade{display:flex;align-items:center;justify-content:center;gap:1.3cqw;width:100%;margin-top:1.5cqw;padding:1cqw 1.5cqw;border:1px solid #000;border-radius:1.4cqw;background:#CBFF8D;color:#000;box-shadow:0 .4cqw #000;font-size:3cqw}
+.quick-factory-upgrade img{width:3.5cqw;height:3.5cqw}
+.quick-factory-upgrade:disabled{background:#AEAEAE;color:#555;opacity:1}
+.quick-factory-upgrade:active:not(:disabled){transform:translateY(.3cqw);box-shadow:0 .1cqw #000}
+.quick-factory-reward{margin-top:1.5cqw;text-align:center;font-size:2cqw;line-height:1.6;color:#243746;background:#fffef0e8;border:1px solid #8f9ca3;border-radius:1cqw;padding:.7cqw .3cqw;pointer-events:none}
+.quick-factory-reward span{display:block;white-space:nowrap}
+.quick-factory-reward span:last-child{color:#8742ad}
+
+#factoryMilestone{white-space:pre-line;text-align:center}
+#quickFactoryClick{color:#8742ad;font-weight:bold}
+
+.game-version{position:absolute;top:.5cqw;left:2cqw;z-index:9;color:#526579;font:500 2cqw/1.4 Arial,sans-serif;letter-spacing:.3px;pointer-events:none}

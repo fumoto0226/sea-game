@@ -1,0 +1,27 @@
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="383.143" height="335.921" viewBox="0 0 383.143 335.921" fill="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="f000">
+<g id="Rectangle 81">
+<path d="M54.6213 81.7811L140.478 71.0685L383.143 103.439V335.921H0V151.258L54.6213 81.7811Z" fill="#FBD9E6"/>
+<mask id="stroke0_0_300" fill="white">
+<path d="M54.6213 81.7811L140.478 71.0685L383.143 103.439V335.921H0V151.258L54.6213 81.7811Z"/>
+</mask>
+<path d="M0 151.258L54.6213 81.7811L140.478 71.0685L383.143 103.439" stroke-width="0.375992" stroke="black" mask="url(#stroke0_0_300)"/>
+</g>
+<g id="Vector 79">
+<use xlink:href="#stroke1_0_300" fill="#FDDBEB"/>
+<use xlink:href="#stroke1_0_300" fill="#FFFBD5"/>
+<path d="M84.2236 105.303V40.0144L140.582 7.43979V71.1554L130.956 77.0463L106.28 91.8829L84.2236 105.303Z" stroke-width="0.281994" stroke-linecap="round" stroke="black"/>
+</g>
+<g id="Vector 80">
+<use xlink:href="#stroke2_0_300" fill="#FA93AE"/>
+<use xlink:href="#stroke2_0_300" fill="#F8F09D"/>
+<path d="M84.2238 40.0514L54.6216 17.5316V82.0671L84.164 105.303L84.2238 40.0514Z" stroke-width="0.281994" stroke="black"/>
+</g>
+<path id="Vector 81" d="M76.6422 2.81173L54.6216 17.5314L84.1979 40.0176L140.634 7.41286L124.128 0.142674L76.6422 2.81173Z" fill="#FCC2DB" stroke-width="0.281994" stroke="black"/>
+<path id="Vector 82" d="M116.698 38.5683C97.4719 43.7507 106.267 91.8471 106.267 91.8471L130.904 77.0202C130.904 77.0202 135.924 33.3859 116.698 38.5683Z" fill="#797979" stroke-width="0.281994" stroke-linecap="round" stroke="black"/>
+</g>
+<defs>
+<path id="stroke1_0_300" d="M84.2236 40.0144V105.303L106.28 91.8829L130.956 77.0463L140.582 71.1554V7.43979L84.2236 40.0144Z"/>
+<path id="stroke2_0_300" d="M54.6216 17.5316L84.2238 40.0514L84.164 105.303L54.6216 82.0671V17.5316Z"/>
+</defs>
+</svg>

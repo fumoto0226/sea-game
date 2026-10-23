@@ -355,3 +355,242 @@ Guest31: User requested arrival interval0.7s; changed queue release delay0.4→0
 2026-10-22 bonus116: Last3 price-ordered upgrades on each of10 fish now give global+1/+2/+3% completion bonuses. Part-time standalone tail replaces prior10% values; other9 fish retain existing doubles and receive globalBonus metadata without added cost/requirements. Effects multiply globally, per-unit preview includes both ×2 and attached global gain; short main description exposes both effects. Factory100 unchanged. Browser bought all30tail upgrades,verified percentage/global and actual unit ratios,ten1/2/3 sets,100 factory,no errors;screenshot inspected,standard client run. Original backup untouched.
 
 2026-10-22 v1.0.0: Marked game top-left v1.0.0 and added VERSION file1.0.0 ahead of major redesign. User will upload to GitHub; no new local backup/copy, commit, tag, or push created. Recommend tagging uploaded complete current commitv1.0.0 for recovery (do not tag old current HEAD with uncommitted work). Browser version screenshot inspected, standard client run.
+
+2026-10-22 v1.0.1 two phases: Completed after interrupted turn. User clarified Lv1→2 needs30 clicks, Lv2→3 needs100, no construction click doubling. New construction/ready/operation states persist; free build button reuses yellow art, single per-level progress bar has two divisions and three empty future-icon slots. Construction hides wallet/rate/shop/actions/right-HUD/main character and all events/rewards/production, keeps fixed header. Lv3 confirmation opens operation or unavailable new-factory notice. Operation restores existing layout, fixed Lv3 HUD, original recruitment prices (no reserved/free offset), no fish levels/arrows. Restored original catalog from protected source:315 upgrades (142global/138double/8mentor/12fingers/15mouse), excludes3retired gold, removes custom18click/tail perks/100limit. Unified cheapest-unlocked reinforcement queue and retained detailed black effect/gray estimate/purple header+numbers for all effect families. Next locked upgrade previews condition when no eligible offers. Permanent Lucky×10/Golden×4 preserved; gift schedules and natural random timers use separate operationSeconds starting on Begin Operation; no random events while building. Hidden/closed time excluded; overall online clock/level timing retained. Old saves retain paid hires/apples/outfit/valid original item IDs, remove former gifts and custom cached benefits, start construction; new-schema phase and operation clocks survive reload. Restart clears to construction. Added persistent version convention in AGENTS; VERSION/UI/cache/text-state all1.0.1. No local backup, commit/tag/push created.
+Validation: Standard game client two iterations; custom full130-click flow, pauses/reloads/ready confirmation, original price series, all315 purchases and original metadata comparison (float tolerance), no free rewards, true click baseline1, wardrobe, gift operation windows. Extra mobile320×640 and desktop1440×900 screenshots+header geometry, foreground clock pause/reset, legacy migration, five effect layouts, file:// boot. No page errors. All327 protected backup payload hashes match; screenshot visuals inspected.
+
+2026-10-22 v1.0.2: Replaced30+100 levelled construction with one100-click progress bar and25/50/75 ticks/placeholder slots. Build button now50cqw (same as produce) with same131:52 ratio, blue outlined pill and existing gear icon. 100th click enters operation directly; removed completion dialog, factory level label/title/state/progress and level-time list. Right HUD/modal say 强化工厂,315 catalog/effects/prices preserved. Schema102 accepts101 saves retaining clicked count capped100; old ready/full states start operation and existing operation clock stays. Version synced VERSION/UI/cache/text-state/AGENTS. Browser checked100 boundary,persistence,no free rewards,3ticks,bluegear,size,auto phase,315,legacy101 migration/restart; no errors. Screenshots inspected,standard client run. No local backup, commit, tag or push created.
+
+2026-10-22 v1.0.3: Swapped operating art to apple-bg1-1, generated same-geometry gold companion with existing23-color palette. Initial apple-bg1-2 had no groups/IDs; user supplied FigmaFrame66 svGQ2LY9ADt5w6B1EGluNd/4990:568. Read high-fidelity design context+screenshot and metadata, downloaded all13 original SVG assets via provided URLs. Added factory-build-data.js:permanent f000 base,11 numeric f001–f011 stages;window f004 uses2 assets. Preserved Figma paint order [5,0,2,1,3,4,10,8,9,11,6,7], local native SVG dimensions, offsets and mirrored right basket. Inline scene composes asset images, reveals at10/19/28/37/46/55/64/73/82/91/100 clicks, with10 internal ticks and11 thumbnail bubbles (completed green,nextblue,futuregray). Images fade in, reduced-motion respected; state derived from persisted clicks. Root SVG height:auto prevents letterboxing; adjusted outer art width for new384 crop vsold500 to preserve screen scale. 100th click still enters operation;315 upgrades/economy/gift clock unchanged. VERSION/UI/cache/textstate/AGENTS1.0.3. Browser verified every threshold,13 assets/nonempty/native sizes/positions/paint slots,11 bubbles,save/reload,phase transition,newnormal/gold visuals,320px fit andfile://; no errors. Inspected initial/partial/all/operation/mobile/file and gold screenshots,standard client run. No backup,commit,tag,push or Figma modifications.
+
+## v1.0.4 背景位置
+- 经营阶段工厂图下移5px；建造阶段使用相同画布大小和横向位置，比经营阶段上移15px。
+- 已用390px、320px和桌面视口验证画布宽度/横向位置一致、纵向相差15px，浏览器无报错。
+
+## v1.0.5 建造收尾
+- 修复地板外粉色和机械臂顶部裁切；进度条不显示数字。
+- 12段进度，11个部件在8至92点击间逐个出现，100点击弹完成提示，确认后开始经营；刷新保留待确认状态。
+- 弹窗说明发展工厂和至少5名员工后可建设新厂的目标；新厂功能仍未开放。
+- 验证通过：11个刻度、92次显示全部部件、100次完成弹窗、刷新保留、确认进入经营，浏览器无异常；已检查建造及弹窗截图。
+
+## v1.0.6
+- 建造50次完成，12段/11个部件；只有最近已解锁部件放大，其余显示小点。
+- 建造阶段显示首页左侧主角及脚底阴影。旧存档保留已有点击数（最多50），满进度显示完成弹窗。
+- 已验证50次完成、当前节点单独放大、前节点缩回小点、主角可见和经营切换；固定建造画布不随焦点横向滚动。
+
+## v1.0.7
+- 两阶段底部延续粉色地板；建造齿轮飞入后每个增加一次进度，支持连续点击、最多50次和重开取消飞行。
+- 已验证到达前进度不变、到达后+1、连续10次、50次含在途上限、完成提示及经营切换，无页面错误；已检查飞行和经营截图。
+
+## v1.0.8
+- 去除两阶段背景地板底部描线；阶段1只保留上移后的建造按钮。
+- 11部件各4个到达齿轮，共44次；全部出现后第45次点击打开建成提示。齿轮瞄准对应部件位置，连续点击按每4个分配目标。
+- 已逐一验证11部件各4次到达、44次不自动跳转、刷新保留、45次弹窗和进入经营；检查飞行/完整建造截图，无页面报错。
+
+## v1.0.9
+- 建造按钮与经营制作苹果按钮同位置/大小；阶段1增加角色引导气泡和说话动作。
+- 开场两句；8/20/36/44到达齿轮时分别提示初具形状、过半、接近完成、再次点击开张；每阶段一次，6秒后隐藏，重开重置，进入经营清理。
+- 验证开场第二句、四个阶段提示、经营后气泡清理；手机视口两个按钮位置与大小完全一致，页面无错误，已检查开场/完工截图。
+
+## v1.0.10 经营开场引导
+- 建厂后取消完成弹窗，进入循序角色对话；开始制作、点击、总数、商店、首位员工、秒产、强化入口顺序显示。
+- 教程点击用苹果飞行到总数，到达后入账，支持连续点击。首位员工1苹果，之后正常价格序列从15开始。旧经营存档跳过教程且保留原价。
+- 验证通过：无完成弹窗、开始制作/首点击、苹果连续飞入与入账、总数/商店/秒产/强化顺序、优惠1后15、紫色5个、真实员工离场触发、步骤刷新恢复及旧存档原价。已检查各阶段截图，无页面错误。
+
+## v1.0.11
+- 苹果和产能浮字使用HUD最终布局坐标，不受UI入场变换影响；产能浮字从可见左边缘飞起并提高层级。
+- 建造切经营的工厂背景平移衔接；引导结束时换装/外出分别从左/右滑入。
+- 已验证总数栏尚在屏外时苹果终点仍在最终总数位置、真实首次员工生成+0.1/s并抵达固定秒产坐标、背景15px位移和按钮双向入场；截图已检查，页面无错误。
+
+## v1.0.12
+- 修复引导首次购买后继续招募被拦截并误报苹果不足；商店展示后均可继续正常购买。
+- 引导期间后续员工不触发欢迎台词，不修改当前教学对话或步骤；完成后恢复欢迎台词。
+- 验证第二位员工15苹果购买成功；在员工/秒产/强化/新厂/收尾步骤均可继续招募且不改台词、不跳步骤；教程完成后恢复欢迎语，页面无异常。
+
+## v1.0.13
+- 衣橱返回工厂按钮加白底圆角黑框和黑色底部阴影，保留蓝色返回箭头，调整内边距与按压反馈。
+- 已检查手机衣橱截图，白框与上下按钮间距正常，返回工厂点击正常。
+
+## v1.0.14
+- 换装时隐藏完整强化工厂UI，返回首页恢复；移除画面外道具一览按钮及其点击绑定。
+- 已检查桌面衣橱截图，强化卡片/快捷按钮一起隐藏，外侧道具一览不再出现，返回工厂后强化UI恢复，页面无报错。
+
+## v1.0.15
+- 返回按钮缩成近正方形，与外出按钮居中对齐。
+- 左侧重置按钮左侧增加中日切换，默认中文；独立语言偏好持久化，切换先保存再刷新。新增日语词典，覆盖引导、主要UI、鱼人、强化效果、衣橱分类与服装名称，复用本地日文字体。
+- 验证中日往返切换与语言持久化不改变员工/资产；日语主要UI、衣橱、强化与引导5人高亮正确。检查全部315个效果描述的日语转换，1001px横屏语言按钮位于屏内，手机衣橱及强化弹窗无越界；已检查日语截图。
+
+## v1.0.16
+- 换装隐藏总数/秒产栏；角色与阴影、返回/扭蛋/外出、服装窗口一起上移10%游戏高度，服装区由33%扩为43%。
+- 删除首帧/ResizeObserver用JS将外侧重置栏从36%搬到顶部的逻辑，改用稳定CSS与固定标题行高直接对齐第一行测试按钮。
+- 验证刷新和切换语言后前75帧左侧按钮位置稳定且与测试首行对齐；换装隐藏总数/秒产、首页恢复，衣橱占43%高度，桌面与手机截图已检查，无页面报错。
+
+## v1.0.17
+- 阶段2工厂背景再下移10px（top由5px改15px），阶段1仍为-10px。
+
+## v1.0.18
+- 用户需求：让传送带及带面上的苹果循环移动。保留原始矢量稿，生成普通/黄金两套动画背景；带面分隔线前进，8颗苹果沿带面转弯进入右筐，门洞边缘裁切，保持原始苹果路径和配色。
+- 动画使用SVG原生时间线，不影响产量、存档或建造规则；减少动态效果时显示原静态路径。源素材不改，scripts/build-conveyor-animation.py 可重新生成动画资源。
+- VERSION、首页版本、资源缓存参数、render_game_to_text 同步为1.0.18。
+- 验证：运行技能的Playwright客户端（临时副本指定本机Chrome）；额外Chrome验证8颗苹果在2秒/3秒时位置变化、减少动态效果隐藏动画层，普通及黄金经营截图已检查，无pageerror，game.js语法通过。
+- 后续：等待用户体验速度与转弯效果；建造阶段保留原静态部件。
+
+## v1.0.19
+- 用户需求：让后面的机械臂动起来。普通/黄金经营背景增加6秒循环：前臂绕固定连接处摆动，腕部轻转，下夹爪开合；沿用原路径与树木遮挡，固定支架不动。
+- 扩展原动画资源生成脚本；减少动态效果时切回原静态机械臂。建造阶段仍沿用静态原始部件。
+- 同步VERSION、首页版本、缓存参数、render_game_to_text为1.0.19。
+- 验证：普通/黄金SVG采样0、2、4、6秒，前臂/腕部/夹爪矩阵变化且6秒回到初始姿态；减少动态效果正确切换；390×844经营截图检查，页面无JS报错，game.js语法通过。已执行技能Playwright客户端。
+- 后续：用户可体验并调整动作速度与幅度。
+
+## v1.0.20
+- 用户纠正：夹爪的两个立体面不可拆开，改为后方关节驱动完整爪头戳树两下、树晃两下、收回并循环。
+- 移除腕部/侧面独立动画。前臂及完整爪头作为刚体绕后端关节旋转，每6秒两次前探后复位；前方浅绿色苹果树含树干/树冠/苹果一起围绕树根轻晃，保持原图层遮挡。普通/黄金均支持，减少动态效果保留静态原稿。
+- 同步版本与缓存参数至1.0.20。运行技能Playwright客户端并查看截图；额外采样普通/黄金0、1.2、2.28、6秒，确认两次戳树与摇树同步、周期末复位、减少动态效果正常，无页面报错。放大检查爪头各面完整连接。
+- 后续：用户体验戳树的幅度与节奏。
+
+## v1.0.21
+- 用户要求圈出的后方关节旋转，带动整个爪子往左动。将后支架、关节外壳、前臂和完整爪头一起纳入刚体动画，旋转轴移至树后遮挡的支架底部(128,43)，前探时向左倾10度，保留两次戳树与树木摇动节奏。
+- 普通/黄金动画同步生成，减少动态效果保留原图，版本及缓存统一1.0.21。
+- 检查普通/黄金周期起点、两次前探、周期末复位及减少动态效果，放大截图确认后关节与爪头整体连接且向左移动，无页面报错；运行技能Playwright客户端，game.js语法通过。
+
+## v1.0.22
+- 用户要求后关节左转时前臂上抬，缩短停顿，黄金狂潮加速机械臂和苹果传送带。
+- 后关节运动内嵌前臂/完整爪头的6度反向旋转，形成向前伸手的姿态；完整爪头各面不拆动。循环6秒改4.5秒，动作重新分配至88%周期，末尾休息约0.54秒；树木两次反馈同步调整。
+- 黄金资源统一缩短所有SVG动画dur与begin为一半：机械臂/树2.25秒，苹果/带面4.5秒，保持苹果间距与反馈同步。普通速度不受影响。
+- 版本/首页/资源缓存/render_game_to_text统一1.0.22。运行技能客户端；额外断言所有黄金动画时长恰为普通一半、对应相位机械臂/前臂/树矩阵一致、循环末复位、减少动态效果正确，无JS报错。普通/黄金放大截图检查通过，game.js语法通过。
+
+## v1.0.23
+- 修复黄金狂潮双机械臂：黄金SVG透明处此前透出底层普通动画，因两套动画速度不同形成重影。黄金状态隐藏普通经营背景，黄金图取消淡入叠加，退出恢复普通图；其他背景颜色渐变保留。
+- 按用户要求黄金动画在原2倍速上再加速5倍，现为普通10倍速：机械臂与树反馈0.45秒一轮，苹果与带面0.9秒一轮；动画偏移同比缩短，苹果间距不变。
+- 版本、首页、缓存与render_game_to_text统一1.0.23。运行技能Playwright客户端并检查截图；额外验证黄金所有动画时长为普通的1/10、同相位一致（允许SVG时间量化误差）、循环复位、减少动态效果、连续进出黄金背景互斥，无页面JS报错；黄金经营截图仅一个机械臂。
+
+## v1.0.24
+- 用户要求黄金提示移到左侧秒产下方，文案仅产能×7（产能小、×7大），幸运苹果移除光晕阴影，两种随机苹果缩小。
+- 提示与秒产票左边对齐，顶部位于票下2cqw，简化为17×9cqw黄色卡片；移除黄金狂热标题与摇晃，保留清晰的字号层级。
+- 幸运苹果隐藏独立specialGlow光效并保留无阴影图片；随机/保证出现的金苹果及幸运苹果统一由13cqw缩为10cqw。
+- 版本、首页、缓存、render_game_to_text统一1.0.24。技能客户端已运行；390/1000宽浏览器断言提示在秒产下且左对齐、文案正确、×7字号大于产能两倍、苹果尺寸为游戏宽10%、幸运光效隐藏，两种苹果点击领取正常，无JS报错；手机截图已检查。
+
+## v1.0.25
+- 用户要求产能×7牌子跟着抖动：整牌以±2度和±0.4px轻抖，保持左侧秒产下方定位和原字号层级，内部文字不独立摇晃。减少动态效果继续禁用动画。
+- 版本、首页、缓存、render_game_to_text同步1.0.25。技能客户端已运行；浏览器采样抖动两端矩阵不同、文字正确、减少动态效果关闭动画，无JS报错；黄金牌子手机截图检查通过。
+
+## v1.0.26
+- 外侧本轮游戏时间下面只记录工厂建造完成、首次雇满5人的本轮用时。milestoneTimes存档字段保存精确秒数，界面显示HH:MM:SS；未发生/旧档缺失显示—，不推测历史时间。
+- 建造进入经营时记录；实际购买使全体员工数由不足5跨到至少5时记录，支持批量招募，后续购买不覆盖。新一轮fresh清空；旧levelTimes仍在迁移中删除。加入中日文标签及render_game_to_text字段。
+- 版本/缓存统一1.0.26。技能Playwright客户端执行并查看截图，额外验证44→45建造事件、4→5招募、后续不覆盖、刷新保留、新一轮清空，页面无JS报错。
+
+## v1.0.27
+- 用户要求恢复之前紫色计时并在达成前隐藏。复用原level-times深紫(#5a189a)、标签与时间同排样式；两条记录独立达成后显示，均未达成则整个记录区隐藏，不显示占位横线。
+- 版本/首页/缓存/render_game_to_text统一1.0.27。技能客户端执行；浏览器检查零记录、单项、双项显示及紫色计算样式，无JS报错，截图检查通过。
+
+## v1.0.28
+- 用户要求其他UI阴影参考秒产票减薄，制作按钮阴影缝隙填满。主要HUD（排名、名牌、余额、苹果标记、工厂卡片与价格、返回/建造）统一0.35cqw黑色阴影。
+- 原制作按钮SVG使用偏移后剔除源形状的滤镜阴影，改为源轮廓下方偏移0.75 SVG单位的完整黑色填充，消除底边透背景间隙；按钮资源缓存同步更新。
+- 版本/首页/缓存/render_game_to_text统一1.0.28。技能客户端已执行；浏览器验证6类主要HUD相同阴影、点击制作及黄金状态无JS报错，查看全页和放大按钮底边截图通过。
+
+## v1.0.29
+- 用户要求总数栏略微上移以居中于上下两排UI。balance top由9.5%改9.1%，苹果图标随父栏一起移动（390宽约上移3px），上下间距更均衡。
+- 版本/首页/缓存/render_game_to_text同步1.0.29。运行技能客户端，经营页面截图检查总数栏与图标一起上移，点击/黄金状态无页面JS报错。
+
+## v1.0.30
+- 用户要求游戏内所有工厂改称农场，中日同步。替换index/game/i18n/upgrades/factory-build-data中的中文工厂→农场、日语工場→農場，包括界面、引导、记录、道具说明、可访问文本及翻译匹配规则；页眉MY FACTORY→MY FARM。内部代码标识及存档键不改。
+- 版本/首页/缓存/render_game_to_text统一1.0.30。技能客户端执行并查看截图；浏览器中日两语言分别核对建造与经营按钮、整页无旧称，无页面JS报错；game与i18n语法通过。
+
+## v1.0.31
+- 用户要求初始右上角强化入口改为招募5名鱼人目标，显示进度；不足5人隐藏紫色开设新农场/绿色继续经营。总员工数达到5后显示按钮，员工仍持续生产。
+- 选择继续经营后任务卡向右退出，强化卡从右入场，并说明强化及新农场入口。选择和分段引导阶段保存，刷新恢复；旧存档缺少选择时显示目标。重开由fresh清空选择及引导。
+- 原初期强化介绍改为查看招募进度，移除初期新农场重复指引；满5人且初期教学结束后依次说明达成、旧场员工持续赚钱、可以继续经营。购买员工不会打断这段引导。提前点继续经营会完成剩余初期教学，切到强化说明。
+- 用户明确选择新农场保留未开放提示；目标卡和原强化弹窗入口均保留该提示，没有创建新农场玩法。
+- 中日同步优化文案，VERSION/首页/缓存/render_game_to_text统一1.0.31，文本状态新增recruitGoal。
+- 技能Playwright客户端执行并查看截图；390宽额外验证4→5进度与按钮显隐、分段说明、未开放提示、继续经营切换、被动生产不中断、刷新恢复、强化弹窗与新农场入口、日语文案，无页面JS报错。检查目标未达成/达成/继续经营/日语截图。
+
+## v1.0.32
+- 用户要求强化农场改称升级农场，入口/弹窗去掉升级进度条，未升级显示等级1，每次已购买升级累加一级。等级由factoryProgress.done+1推导，刷新沿用现有存档。招募5人的任务进度条保留。
+- 中日升级名称、按钮、提示同步调整，继续经营引导简化为“在这里可以升级农场，也可以开设新农场。”；日语入口长标题允许换行。
+- 修复任务退场副本变形：原先副本移除ID后失去fill/label的ID样式，改为共享class，复制体和原卡条形尺寸、数字字号一致。
+- 版本/首页/缓存/render_game_to_text统一1.0.32。技能客户端执行并查看截图；额外Chrome验证副本条形/标签矩形和字号完全一致、等级1→2、入口与弹窗无升级进度条、弹窗可正常关闭、刷新保留、日语等级2、无JS报错。截图检查后修正旧进度文字absolute定位和日语标题溢出，复验通过。
+
+## v1.0.33
+- 用户要求等级居中显示lv.1，第一阶段齿轮到达落点时有施工效果。入口/弹窗等级统一lv.N，入口居中。
+- 齿轮实际到达并增加建造进度时，在目标坐标生成7团浅色烟尘，550ms扩散消失，700ms清理；连点允许叠加。重开清理烟尘及定时器，减少动态效果不播放烟尘但正常增加进度。
+- 版本/首页/缓存/render_game_to_text统一1.0.33。技能客户端执行并查看截图；额外验证烟尘坐标与部件目标一致、7粒子、进度+1、自动清理、减少动态效果进度正常、lv.1居中，无JS报错；施工落点与经营等级截图检查通过。
+
+## v1.0.34
+- 用户要求施工烟雾随机、各团融合无内部交错线、逐渐放大鼓动，并有锤子敲两下。
+- 烟雾改为每次随机半径/漂移/鼓动时长的单一平滑SVG外轮廓，以形状插值与非均匀膨胀形成鼓涌，1.35秒逐渐扩散上浮消散，不再画多个重叠圆圈。新增手绘矢量小锤子，1.05秒内敲两次。
+- 效果1.5秒清理，重新开始清除容器/定时器，减少动态效果仍跳过效果且正常建造。
+- 版本/首页/缓存/render_game_to_text统一1.0.34。技能客户端运行；额外Chrome验证两次随机轮廓不同、单路径与形状插值存在、锤子存在、结束和重开清理、减少动态效果建造正常、无JS报错；查看落点烟雾与锤子截图。
+
+## v1.0.35
+- 用户要求恢复随机圆团烟雾、遮挡内部描线隐藏；锤子转正并始终仅一把，连点续敲、停点消失。
+- 烟雾用5–7个随机半径/坐标的实心圆组成，在圆团整体alpha上膨胀描外沿，合成统一外轮廓，无圆间交错线。保留膨胀、上浮、淡出。
+- 锤子独立单例，头在上柄在下；到达事件只更新单例位置和850ms消失定时器，不复制锤子或重启挥动。重开同时清理锤子与烟雾。
+- 版本/首页/缓存/render_game_to_text统一1.0.35。技能客户端执行；额外验证随机圆团与融合滤镜、连续6次仅一个锤子、续敲延长、停止后删除、重开清理，无页面JS报错，截图检查通过。
+
+## v1.0.36
+- 用户要求移除锤子，烟雾恢复较大范围的一圈圆团向外发散，中间留空或少量碎烟。
+- 删除锤子单例/定时器/动画样式。7–9个随机圆团环绕落点，cx/cy沿径向外移并增大，整体烟雾尺寸由76增至112px（390宽基准），中心随机0–2小碎烟，不填满；继续使用整体alpha描边隐藏重叠内部线条。
+- 版本/首页/缓存/render_game_to_text统一1.0.36。技能客户端执行；Chrome验证无锤子、至少7个外围圆团与中心留空、落点施工进度、自动清理和减少动态效果正常，无JS报错；环形扩散截图检查通过。
+
+## v1.0.37
+- 用户要求单圆气泡改成多个相连圆团组成烟簇，分别以不同速度向外飘，不要整圈同步放大。
+- 外圈5–6簇，每簇3–5个重叠圆团、随机半径及排布，保留整体alpha融合外沿；中心随机0–2簇小碎烟。
+- 每簇独立随机位移向量、12–39 SVG单位外移距离、0.85–1.5秒运动/消散时长及轻微起步错落。移除整层缩放，圆团仅各自轻微膨胀，仍无锤子。清理时间增至1.75秒覆盖最长效果。
+- 版本/首页/缓存/render_game_to_text统一1.0.37。技能客户端执行；Chrome验证每簇多圆、运动时长/向量独立、无整层缩放、无锤子、正常清理与施工进度，无JS报错，截图检查通过。
+
+## v1.0.38
+- 用户要求烟团疏密不均、数量变化，普通建造少一些，完工更多更大。
+- 烟簇角度不再等分：随机2–3簇邻近聚集，其余以独立角度和远近排布；继续各自随机速度/距离。
+- 普通点击2–5簇、尺寸0.9倍；每4次部件完工6–10簇、1.2倍；第45次完成农场10–15簇、1.5倍，在农场主体附近追加完工扩散。中心碎烟与圆团融合保持。
+- 版本/首页/缓存/render_game_to_text统一1.0.38。技能客户端执行；Chrome采样16次普通数量验证随机及范围，验证第4次部件完工、第45次完成进入经营且增强数量/尺寸、自动清理、无JS报错；部件/全场完工截图检查通过。
+
+## v1.0.39
+- 用户要求施工烟雾稍白。烟雾填色由暖米白#fff8e9改为中性近白#fafafa，外沿由暖灰#a59a85改中性灰#a5a5a5，形状/数量/运动不变。
+- 版本/首页/缓存/render_game_to_text统一1.0.39。技能客户端执行；施工与完工浏览器检查通过，无JS报错，查看偏白烟雾截图。
+
+## v1.0.40
+- 用户调整首次经营流程：初期教学在招募进度介绍后停留waitRecruit，不播放closing、不让换装/外出提前进场；等待至少5人。达成后目标只显示开设新农场，不再有直接继续经营按钮或自动三段达成对白。
+- 开设新农场打开说明弹窗：体验其他农场、原员工继续生产、常态秒产10%继承；显示实际常态秒产与10%预览（如0.5/s→0.05/s，排除狂潮临时加成）；说明继续经营可招募更多员工并升级提高秒产、日后仍可从升级界面进入。
+- 紫色开设新农场/绿色继续经营移到弹窗。前者仍提示未开放；后者关闭弹窗并保留原任务退场/升级进场动画，播放“开始干活吧！”，3秒后才完成教学并让换装/外出入场。后续升级界面的新农场入口复用同一弹窗，继续经营不会重复初次入场。
+- 新增等待状态/旧未选择存档迁移，选择和流程刷新恢复；中日文同步。版本/首页/缓存/render_game_to_text统一1.0.40。
+- 技能客户端执行并查看截图；额外Chrome验证招募等待不结束教学、目标仅一按钮、满5人后弹窗数值及黄金状态排除临时buff、未开放提示、关闭→正式开始→入口出现、刷新保留、后续入口和日语，无页面JS报错。检查中文/日文弹窗、等待及正式开始截图。
+
+## v1.0.41
+- 用户要求所有道具取消员工数/累计产量/手动产量等解锁条件，仅按价格排序；允许影响数值时说明。
+- offers统一未购买按价排序，nextFactoryItem取全价序中首个未买道具；购买/升级箭头/快捷升级/弹窗/目录均移除解锁检查和旧条件文案，保留余额与重复购买检查。原价格/效果/保存ID不改，旧已购道具保留。
+- 前五次100、500、1000、5000、10000。已告知用户购买时机改变：员工专属升级在未雇对应员工时无即时总产量增益、后来雇佣自动生效；原数量门槛强力效果能提前买，数值公式不改但节奏不保证相同。
+- 中日无需解锁说明同步，版本/首页/缓存/render_game_to_text统一1.0.41。技能客户端执行；Chrome验证前五价序、10人升级在5人时可购、农民0人先买后雇加成正确、mouse/mentor/global均无门槛、结果有限、旧存档保留且补回便宜未买项，无JS报错；升级弹窗截图检查。
+
+## v1.0.42
+- 用户要求前三个价序道具组成首次升级农场0/3阶段，买齐提示农场升到2级（测试版建筑插画不变），确认后转强化农场lv.1，继续后续道具；记录首次农场升级时间。
+- 首次阶段按最便宜3件（100/500/1000）已购数推进，效果与价格原样生效；第三项成交记录本轮playSeconds并强制确认弹窗，在确认前阻止继续购买。确认后强化等级为1+前三项以外已购数。
+- 完工确认后鱼人依次提示“农场发展壮大了！”和可在右上角强化、完善设施。外侧紫色首次农场升级时间达成后显示，刷新保留，重开清空；历史已购前三件的旧档自动转强化，不伪造历史时间，未确认弹窗刷新后恢复。
+- 中日阶段名、完工弹窗、强化说明与计时标签同步。版本/首页/缓存/render_game_to_text统一1.0.42。
+- 技能客户端执行并查看截图；Chrome验证0→1→2→3、前三件效果、完工弹窗/刷新恢复、确认前购买拦截、强化lv.1→2及下一件5000、首次时间固定不覆盖、引导阶段、日语、无JS报错；初升进度/完工/强化截图已检查。
+
+## v1.0.43
+- 用户要求黄金飘字阴影偏黄并有相加效果、首次升级计时排在雇满5人之后、升级确认后各部件大烟雾、Demo三个快进按钮。
+- 黄金光晕从普通#fx堆叠上下文移到独立#frenzyGlowLayer，整个层plus-lighter与场景相加，主体数字保留普通描边；光晕改亮黄色、去除主体实色阴影，重开清理光晕。
+- 紫色记录顺序：建造完成→首次雇满5人→首次农场升级。
+- 升级确认后在主体及11个部件中心同时播放final级烟雾，减少动态效果不播放。
+- Demo新增建造完成/首次5人/首次升级快进，按向前推进不回滚既有进度；升级快进补足前三道具所需余额并实际购买，停在首次升级确认弹窗，确认可测试重建。按钮中日同步。
+- 版本/首页/缓存/render_game_to_text统一1.0.43。技能客户端执行并查看截图；Chrome验证3阶段、12处烟雾/清理、计时DOM顺序、独立相加光晕、重复快进不重复购买，无页面JS报错；重建与黄色光晕截图检查通过。
+
+## v1.0.44
+- 用户澄清取消全场大烟雾，改为买齐前三项后的首次升级弹窗点确认，才在每个部件附近各一团小装修烟雾，不换背景。
+- 新增renovation模式：单烟簇、0.65倍尺寸、小范围独立漂移，无中心碎烟；仅showFarmRebuildDust使用该模式，仍在确认处理函数触发，主体+11部件各一处。普通建造/部件完工/整场建成烟雾保持原配置。
+- 版本/首页/缓存/render_game_to_text统一1.0.44。技能客户端执行；Chrome验证升级弹窗确认前无烟雾、确认后12处各一簇renovation、背景保持、清理正常、Demo快进和光晕/计时回归通过，无JS报错；小烟雾截图已检查。
+
+## v1.0.45
+- 用户要求首次升级确认后的各区域装修烟雾更多、更大。renovation模式每处1簇增加为随机3–4簇，尺寸0.65倍增至1倍，初始排布半径和外移距离略增；仍只在首次升级弹窗确认后播放，普通建造烟雾不变。
+- 版本/首页/缓存/render_game_to_text统一1.0.45。验证确认前无烟雾、确认后12区域各3–4簇、清理正常、Demo流程无JS报错，查看装修烟雾截图；技能客户端执行。
+
+## v1.0.46
+- 用户希望装修效果不细碎，在整个农场周围增加大烟雾。部件模式尺寸1→1.4倍；保留12处部件烟团，外围新增7处renovationOuter烟簇，每处随机4–6簇、2.1倍尺寸，形成覆盖建筑/树冠/传送带的整体装修波。
+- 仍仅首次升级弹窗确认后触发，保持白烟、独立飘散和自动清理，普通建造不变。
+- 版本/首页/缓存/render_game_to_text统一1.0.46。技能客户端执行；Chrome验证确认前无烟、确认后19处及各模式数量范围、自动清理、Demo快进/计时/光晕回归无JS报错；整体升级烟雾截图检查通过。
+
+## v1.0.47
+- 用户要求大烟雾描边维持小烟雾细度，并保留大小错落。外沿滤镜膨胀半径按烟雾缩放反向补偿（0.65×0.9/size），实际屏幕描边厚度一致，不再随烟团大小变粗。
+- 部件模式交替小/中/较大，外围7处同样混合0.75–2倍尺寸，各自±10%随机扰动；保留整体装修覆盖与独立运动。
+- 版本/首页/缓存/render_game_to_text统一1.0.47。技能客户端执行；Chrome断言不同尺寸的滤镜实际描边厚度一致、19处模式和数量范围、确认触发/清理正常，无JS报错，大小错落截图检查通过。

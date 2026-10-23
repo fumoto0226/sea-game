@@ -149,10 +149,10 @@ h1 svg{stroke-width:1.2}.rank svg g{stroke-width:1}
 .reward-impact{display:inline-block;transform-origin:center;animation:reward-pop .32s cubic-bezier(.15,.85,.3,1) both,reward-jitter .12s linear .32s infinite;filter:drop-shadow(0 0 3px #ffdc43)}
 @keyframes reward-pop{0%{transform:scale(1.85) rotate(-9deg)}40%{transform:scale(1.45) rotate(6deg)}75%{transform:scale(.9) rotate(-4deg)}100%{transform:scale(1.12) rotate(0)}}
 @keyframes reward-jitter{0%,100%{transform:scale(1.12) translate(-2px,0) rotate(-5deg)}25%{transform:scale(1.22) translate(3px,-1px) rotate(5deg)}50%{transform:scale(1.08) translate(-3px,1px) rotate(-4deg)}75%{transform:scale(1.2) translate(2px,-1px) rotate(4deg)}}
-/* Gentle crossfades for frenzy colors; original artwork stays underneath. */
+/* Background colors fade; animated artwork swaps exclusively to avoid ghost limbs. */
 .phone:before{content:'';position:absolute;inset:0;z-index:-2;pointer-events:none;background:linear-gradient(#fff0a2 0 80.5%,#fce592 80.5% 100%);opacity:0;transition:opacity .28s ease-out}
 .golden-frenzy.phone:before{opacity:1}
-.factory-art .golden-art{position:absolute;inset:0;opacity:0;pointer-events:none;transition:opacity .28s ease-out}
+.factory-art .golden-art{position:absolute;inset:0;opacity:0;pointer-events:none;transition:none}
 .golden-frenzy .factory-art .golden-art{opacity:1}
 .building-shop,h1,h1>span,.bulk button,.tile,.modal-wallet{transition:background-color .28s ease-out,color .28s ease-out}
 .golden-frenzy .building-shop{background-color:#f4d45e}
@@ -657,7 +657,7 @@ h1>span img{width:4.6cqw;height:4.6cqw;display:block}
 .fish-upgrade-dialog .upgrade-close{width:28px;height:28px;top:12px;right:12px;font-size:23px}
 #fishUpgradeName,#factoryNextName,#factoryStageCount,#factoryNextHint{display:none}
 .fish-upgrade-dialog .upgrade-caption{font-size:13px;color:#555;text-align:center;margin:14px 0 6px}
-#factoryNextEffect,#fishUpgradeEffect{text-align:center;font-size:18px;font-weight:bold;margin:0 0 16px}
+#factoryNextEffect,:is(#fishUpgradeEffect,#factoryNextEffect){text-align:center;font-size:18px;font-weight:bold;margin:0 0 16px}
 .fish-upgrade-dialog .upgrade-price{font-size:22px;margin-bottom:16px;gap:8px}
 .fish-upgrade-dialog .upgrade-price img{width:27px;height:27px}
 #confirmFactoryUpgrade,#confirmFishUpgrade{font-size:18px;padding:10px;border-width:1px;border-radius:10px;box-shadow:0 2px #000}
@@ -773,25 +773,25 @@ h1>span img{width:4.6cqw;height:4.6cqw;display:block}
 .wardrobe-back{bottom:46%}
 .outdoor-button:active{transform:translateY(1px)}
 
-#fishUpgradeEffect{white-space:pre-line}
+:is(#fishUpgradeEffect,#factoryNextEffect){white-space:pre-line}
 
 #openNewFactory{width:100%;margin-top:14px;padding:10px;border:1px solid #000;border-radius:10px;background:#d6a6ef;color:#000;box-shadow:0 2px #000;font-size:18px;font-weight:bold}
 #openNewFactory:active{transform:translateY(2px);box-shadow:none}
 #newFactoryNotice{text-align:center;margin:12px 0 0;font-size:15px;color:#49325d}
 
-#fishUpgradeEffect .upgrade-key-effect{display:block;color:#000;font-size:18px;font-weight:bold;line-height:1.5}
-#fishUpgradeEffect .upgrade-key-values{display:block;margin-top:4px;font-size:23px;color:#000}
-#fishUpgradeEffect .upgrade-estimate{display:block;margin-top:16px;padding:12px;background:#edf5fa;border:1px solid #c0d8e7;border-radius:10px;color:#6c879b;font-size:12px;font-weight:normal;line-height:1.5;white-space:normal}
-#fishUpgradeEffect .upgrade-estimate-title{display:block;font-size:12px;font-weight:bold;letter-spacing:1px}
-#fishUpgradeEffect .upgrade-estimate-note{display:block;margin:2px 0 10px;font-size:11px;color:#7892a4}
-#fishUpgradeEffect .upgrade-estimate-row{display:block;margin-top:9px}
-#fishUpgradeEffect .upgrade-estimate-label{display:block}
-#fishUpgradeEffect .upgrade-estimate-values{display:block;font-size:19px;font-weight:bold;line-height:1.4;color:#245d86}
-#fishUpgradeEffect .upgrade-estimate-unit{display:block;font-size:11px}
+:is(#fishUpgradeEffect,#factoryNextEffect) .upgrade-key-effect{display:block;color:#000;font-size:18px;font-weight:bold;line-height:1.5}
+:is(#fishUpgradeEffect,#factoryNextEffect) .upgrade-key-values{display:block;margin-top:4px;font-size:23px;color:#000}
+:is(#fishUpgradeEffect,#factoryNextEffect) .upgrade-estimate{display:block;margin-top:16px;padding:12px;background:#edf5fa;border:1px solid #c0d8e7;border-radius:10px;color:#6c879b;font-size:12px;font-weight:normal;line-height:1.5;white-space:normal}
+:is(#fishUpgradeEffect,#factoryNextEffect) .upgrade-estimate-title{display:block;font-size:12px;font-weight:bold;letter-spacing:1px}
+:is(#fishUpgradeEffect,#factoryNextEffect) .upgrade-estimate-note{display:block;margin:2px 0 10px;font-size:11px;color:#7892a4}
+:is(#fishUpgradeEffect,#factoryNextEffect) .upgrade-estimate-row{display:block;margin-top:9px}
+:is(#fishUpgradeEffect,#factoryNextEffect) .upgrade-estimate-label{display:block}
+:is(#fishUpgradeEffect,#factoryNextEffect) .upgrade-estimate-values{display:block;font-size:19px;font-weight:bold;line-height:1.4;color:#245d86}
+:is(#fishUpgradeEffect,#factoryNextEffect) .upgrade-estimate-unit{display:block;font-size:11px}
 
-#fishUpgradeEffect .upgrade-estimate{background:#f0f0ef;border-color:#d2d2d0;color:#656565}
-#fishUpgradeEffect .upgrade-estimate-note{color:#777}
-#fishUpgradeEffect .upgrade-estimate-values{color:#8742ad}
+:is(#fishUpgradeEffect,#factoryNextEffect) .upgrade-estimate{background:#f0f0ef;border-color:#d2d2d0;color:#656565}
+:is(#fishUpgradeEffect,#factoryNextEffect) .upgrade-estimate-note{color:#777}
+:is(#fishUpgradeEffect,#factoryNextEffect) .upgrade-estimate-values{color:#8742ad}
 .play-time{margin-top:16px;text-align:center;color:#29323e;line-height:1.5}
 .play-time span{display:block;font-size:13px}
 .play-time strong{display:block;font-size:21px;font-variant-numeric:tabular-nums;letter-spacing:1px}
@@ -803,21 +803,21 @@ h1>span img{width:4.6cqw;height:4.6cqw;display:block}
 .level-times i{font-style:normal;font-weight:700}
 .level-times b{font-variant-numeric:tabular-nums;letter-spacing:.5px}
 
-#fishUpgradeEffect .upgrade-click-effect{display:block;margin-top:6px}
+:is(#fishUpgradeEffect,#factoryNextEffect) .upgrade-click-effect{display:block;margin-top:6px}
 
 /* Compact upgrade typography and clearly separated estimate heading. */
 .fish-upgrade-dialog h2{font-size:18px;margin-right:34px}
-#factoryNextEffect,#fishUpgradeEffect,#fishUpgradeEffect .upgrade-key-effect{font-size:16px}
-#fishUpgradeEffect .upgrade-key-values{font-size:20px;margin-top:2px}
+#factoryNextEffect,:is(#fishUpgradeEffect,#factoryNextEffect),:is(#fishUpgradeEffect,#factoryNextEffect) .upgrade-key-effect{font-size:16px}
+:is(#fishUpgradeEffect,#factoryNextEffect) .upgrade-key-values{font-size:20px;margin-top:2px}
 .fish-upgrade-dialog .upgrade-price{font-size:20px;margin-bottom:12px}
 #confirmFactoryUpgrade,#confirmFishUpgrade,#openNewFactory{font-size:16px}
-#fishUpgradeEffect .upgrade-estimate{margin-top:12px;padding:0 10px 9px;overflow:hidden}
-#fishUpgradeEffect .upgrade-estimate-title{margin:0 -10px 6px;padding:4px 10px;background:#8742ad;color:#fff;font-size:11px;line-height:1.4;letter-spacing:0}
-#fishUpgradeEffect .upgrade-estimate-note{margin:0 0 5px;font-size:10px}
-#fishUpgradeEffect .upgrade-estimate-row{margin-top:5px}
-#fishUpgradeEffect .upgrade-estimate-label{font-size:11px;line-height:1.35}
-#fishUpgradeEffect .upgrade-estimate-values{font-size:17px;line-height:1.3}
-#fishUpgradeEffect .upgrade-estimate-unit{font-size:10px;line-height:1.3}
+:is(#fishUpgradeEffect,#factoryNextEffect) .upgrade-estimate{margin-top:12px;padding:0 10px 9px;overflow:hidden}
+:is(#fishUpgradeEffect,#factoryNextEffect) .upgrade-estimate-title{margin:0 -10px 6px;padding:4px 10px;background:#8742ad;color:#fff;font-size:11px;line-height:1.4;letter-spacing:0}
+:is(#fishUpgradeEffect,#factoryNextEffect) .upgrade-estimate-note{margin:0 0 5px;font-size:10px}
+:is(#fishUpgradeEffect,#factoryNextEffect) .upgrade-estimate-row{margin-top:5px}
+:is(#fishUpgradeEffect,#factoryNextEffect) .upgrade-estimate-label{font-size:11px;line-height:1.35}
+:is(#fishUpgradeEffect,#factoryNextEffect) .upgrade-estimate-values{font-size:17px;line-height:1.3}
+:is(#fishUpgradeEffect,#factoryNextEffect) .upgrade-estimate-unit{font-size:10px;line-height:1.3}
 .fish-upgrade-dialog .upgrade-close{top:12px;right:12px;width:30px;height:30px;padding:0;font-size:0;line-height:0;box-shadow:none}
 .fish-upgrade-dialog .upgrade-close:before,.fish-upgrade-dialog .upgrade-close:after{content:'';position:absolute;left:20%;top:calc(50% - .5px);width:60%;height:1px;background:#000;transform:rotate(45deg)}
 .fish-upgrade-dialog .upgrade-close:after{transform:rotate(-45deg)}
@@ -840,3 +840,208 @@ h1>span img{width:4.6cqw;height:4.6cqw;display:block}
 #quickFactoryClick{color:#8742ad;font-weight:bold}
 
 .game-version{position:absolute;top:.5cqw;left:2cqw;z-index:9;color:#526579;font:500 2cqw/1.4 Arial,sans-serif;letter-spacing:.3px;pointer-events:none}
+
+/* v1.0.1 — build first, then operate. The header stays mounted throughout. */
+.construction-phase .balance,.construction-phase .rate,.construction-phase .factory-hud,
+.construction-phase .actions,.construction-phase .building-shop,
+.construction-phase .special-layer,.construction-phase .special-glow,
+.construction-phase .fish-worker,.construction-phase .gold-waterfall,
+.construction-phase .gold-rain,.construction-phase .button-aura,.construction-phase .gold-edge-glow{display:none!important}
+.construction-phase .stage{top:13%;bottom:36%;overflow:hidden}
+.construction-phase .factory-art{width:170%;left:-17%;top:1%}
+.construction-panel{position:absolute;z-index:10;left:5%;right:5%;bottom:3%;padding:4cqw;border:1px solid #000;border-radius:3cqw;background:#fffef0;box-shadow:0 .7cqw #000}
+.construction-heading{display:flex;align-items:center;gap:2cqw;margin-bottom:4cqw}
+.construction-heading img{width:9cqw;height:9cqw;object-fit:contain}
+.construction-heading h2{margin:0;font-size:4.2cqw;line-height:1.3}
+.construction-track{position:relative;height:7cqw;border:1px solid #000;border-radius:1.4cqw;overflow:hidden;background:#fff}
+#constructionFill{display:block;width:0;height:100%;background:#CCDC45;transition:width .15s ease-out}
+#constructionCount{position:absolute;inset:0;display:grid;place-items:center;font-size:3.1cqw;z-index:2}
+.construction-track>i{position:absolute;top:0;bottom:0;border-left:1px solid #0006;z-index:1}
+.construction-goals{position:relative;height:8cqw;margin-top:1.2cqw}
+.construction-goal{position:absolute;transform:translateX(-50%);height:6.2cqw;width:6.2cqw;border:1px solid #a8afb2;border-radius:1cqw;background:#eff1ef;transition:background .2s,border-color .2s}
+.construction-goal:before{content:'';position:absolute;top:-.7cqw;left:calc(50% - .5cqw);width:1cqw;height:1cqw;transform:rotate(45deg);border-left:1px solid #a8afb2;border-top:1px solid #a8afb2;background:inherit}
+.construction-goal>svg{position:relative;display:block;width:100%;height:100%;opacity:.45;filter:grayscale(1)}
+.construction-goal.is-built{background:#CBFF8D;border-color:#526d39}
+.construction-goal.is-built>svg,.construction-goal.is-next>svg{opacity:1;filter:none}
+.construction-goal.is-next{background:#e6f5ff;border-color:#5b9ac2}
+.construction-goal.is-built:before{border-color:#526d39}
+.construction-goal.is-next:before{border-color:#5b9ac2}
+#constructionNote{text-align:center;font-size:2.8cqw;color:#62645d;margin:0 0 3cqw;line-height:1.4}
+.build-factory{position:relative;display:flex;align-items:center;justify-content:center;gap:2cqw;width:50cqw;max-width:100%;aspect-ratio:131/52;margin:0 auto;padding:2.5cqw 4cqw;border:1px solid #000;border-radius:20cqw;background:#59b9f4;box-shadow:0 .8cqw #000}
+.build-factory:before{content:'';position:absolute;inset:1.5cqw;border:1px solid #000;border-radius:20cqw;background:#bee8ff;pointer-events:none}
+.build-factory>img{position:relative;width:10cqw;height:10cqw;display:block;object-fit:contain;pointer-events:none}
+.build-factory>span{position:relative;color:#000;font-size:3.8cqw;font-weight:bold;-webkit-text-stroke:.25cqw white;paint-order:stroke fill;white-space:nowrap;pointer-events:none}
+.build-factory:disabled{opacity:1}
+.factory-entry-head>.factory-can-upgrade{margin-left:auto}
+.factory-upgrade-dialog #factoryNextHint{display:block;font-size:12px;text-align:center;color:#666;margin-top:10px}
+.factory-upgrade-dialog #factoryNextHint:empty{display:none}
+#factoryNextEffect{white-space:normal}
+@media(prefers-reduced-motion:reduce){#constructionFill{transition:none}}
+
+.construction-phase{background:linear-gradient(#a2daf9 0 50%,#fbd9e7 50% 100%)}
+
+/* Updated factory artwork stays separate for building and operating. */
+.factory-art .construction-factory-art{display:none}
+.construction-phase .factory-art .operating-factory-art,.construction-phase .factory-art .golden-art{display:none}
+.construction-phase .factory-art .construction-factory-art{display:block}
+
+#constructionScene{overflow:visible}
+#constructionScene .build-part{opacity:0;visibility:hidden;transition:opacity .3s ease-out}
+#constructionScene .build-part.is-built{opacity:1;visibility:visible}
+#constructionCount{inset:0 auto 0 50%;transform:translateX(-50%);padding:0 1cqw;background:#fffef0c9}
+@media(prefers-reduced-motion:reduce){#constructionScene .build-part,.construction-goal{transition:none}}
+#constructionScene{width:100%;height:auto}
+/* The new exports trim the old 500px canvas; retain the artwork's screen scale. */
+.factory-art{width:153.6%;left:-.9%;top:15px}
+/* Both phases share the same canvas; construction sits 15px above operation. */
+.construction-phase .stage{top:17.2%}
+.construction-phase .factory-art{width:153.6%;left:-.9%;top:-10px}
+
+/* Keep the ground color below the exported floor, never above its diagonal edge. */
+.construction-phase{background:linear-gradient(to bottom,#a2daf9 0 calc(17.2% - 10px + 148cqw),#fbd9e6 calc(17.2% - 10px + 148cqw) 100%)}
+.construction-phase .stage{overflow:visible;background:none}
+.construction-complete-dialog{width:min(80vw,380px);padding:28px 24px;border:1.5px solid #000;border-radius:20px;background:#fffef0;color:#000;box-shadow:0 5px #000;text-align:center}
+.construction-complete-dialog::backdrop{background:#26375466;backdrop-filter:blur(3px)}
+.construction-complete-dialog h2{font-size:25px;margin:0 0 16px}
+.construction-complete-dialog p{font-size:16px;line-height:1.6;margin:0 0 18px}
+.construction-complete-tip{background:#f0edf5;border:1px solid #d7cce4;border-radius:12px;padding:14px;font-size:15px;line-height:1.7;color:#57515f}
+.construction-complete-tip strong{color:#8846b7}
+#beginOperation{width:100%;margin-top:22px;padding:12px;border:1px solid #000;border-radius:12px;background:#ccdc45;box-shadow:0 3px #000;font-size:19px;color:#000}
+
+/* Only the latest completed construction milestone expands. */
+.construction-goal{top:2.3cqw;width:1.5cqw;height:1.5cqw;padding:0;border-radius:50%;background:#d5d9dd;border-color:#8c9398;transition:width .2s,height .2s,top .2s,background .2s,border-radius .2s}
+.construction-goal:before{display:none}
+.construction-goal>svg{opacity:0;visibility:hidden}
+.construction-goal.is-current{top:0;width:6.2cqw;height:6.2cqw;border-radius:1cqw;background:#CBFF8D;border-color:#526d39}
+.construction-goal.is-current>svg{opacity:1;visibility:visible;filter:none}
+/* Oversized scenery must not let button focus scroll the game horizontally. */
+.construction-phase{overflow:clip}
+
+/* Continue the floor color to the bottom below either factory canvas. */
+.phone:not(.wardrobe-open){background:linear-gradient(to bottom,#a2daf9 0 80%,#fbd9e6 80% 100%)}
+.construction-gear-flight{position:fixed;z-index:2000;pointer-events:none;object-fit:contain;will-change:transform,opacity}
+
+/* Construction is a single floating action, with no surrounding panel. */
+.construction-panel{left:0;right:0;bottom:10%;padding:0;border:0;border-radius:0;background:none;box-shadow:none}
+
+/* Match the operating-phase production action's center and dimensions. */
+.construction-panel{top:65.9%;bottom:auto;height:11.6%;display:flex;align-items:center;justify-content:center}
+.construction-phase .purchase-speech{width:49%;left:25%;font-size:2.8cqw}
+
+/* Operating tutorial reveals the existing HUD in conversation order. */
+.tutorial-hidden{visibility:hidden!important;pointer-events:none!important}
+.operation-tutorial .actions>#openGacha,.operation-tutorial .actions>.wardrobe-entry,.operation-tutorial .bulk{visibility:hidden;pointer-events:none}
+.operation-tutorial .purchase-speech{width:55%;left:25%;font-size:2.8cqw}
+.tutorial-five{color:#9146bd;font-weight:900}
+.build-factory.tutorial-start{background:#ffed32}
+.build-factory.tutorial-start:before{background:#fff98a}
+.build-factory.tutorial-start>img{display:none}
+.build-factory.tutorial-start>span{font-size:4.4cqw}
+.operation-tutorial #constructionPanel{z-index:102}
+
+/* Production labels stay above the scene during the tutorial HUD reveal. */
+.rate-gain{z-index:110}
+/* A framed return action, matching the game's outlined controls. */
+.wardrobe-back{width:18cqw;gap:1.1cqw;padding:1.7cqw 1cqw 1.5cqw;border:1px solid #000;border-radius:2.3cqw;background:#fff;box-shadow:0 .65cqw #000}
+.wardrobe-back svg{width:6cqw;height:5cqw}
+.wardrobe-back span{font-size:2.5cqw;line-height:1.3;white-space:nowrap}
+.wardrobe-back:active{transform:translateY(.4cqw);box-shadow:0 .25cqw #000}
+
+.wardrobe-open .factory-hud{display:none!important}
+
+/* Return button shares the outing icon's horizontal center. */
+.wardrobe-back{right:7.25%;width:13.5cqw;height:13.5cqw;padding:1cqw;gap:.7cqw;justify-content:center;border-radius:2cqw}
+.wardrobe-back svg{width:5cqw;height:4.5cqw}
+.wardrobe-back span{font-size:2.1cqw}
+.debug-reset{width:clamp(100px,11vw,160px)}
+.debug-reset #languageSwitch{position:absolute;right:calc(100% + 10px);top:0;width:88px;font-size:12px;padding:11px 4px;white-space:nowrap}
+:lang(ja) .wardrobe-back span{font-size:1.9cqw}
+:lang(ja) .wardrobe-tabs button{font-size:1.7cqw}
+:lang(ja) .purchase-speech{font-size:2.6cqw}
+:lang(ja) .factory-entry-head b{font-size:3.1cqw}
+
+:lang(ja) .frenzy-title{font-size:2.1cqw;line-height:1.25;letter-spacing:0;overflow-wrap:anywhere}
+:lang(ja) .frenzy-capacity{font-size:2.2cqw}
+
+/* Wardrobe dedicates the space below the fixed header to preview and clothing. */
+.wardrobe-open .balance,.wardrobe-open .rate{display:none!important}
+.wardrobe-open .fish-character{top:-10%}
+.wardrobe-open .fish-character-shadow{top:13%}
+.wardrobe-inventory{top:57%}
+.wardrobe-side{bottom:44.5%}
+.wardrobe-back{bottom:56%}
+/* Both external columns use final CSS geometry from their very first paint. */
+.debug-events{top:7%}
+.debug-events small{display:block;font-size:10px;line-height:15px;height:15px;flex-shrink:0}
+.debug-reset{top:calc(7% + 24px)}
+.debug-reset button,.debug-events button{line-height:20px}
+
+/* Transparent SVG regions must not reveal the other animation phase. */
+.golden-frenzy .factory-art .operating-factory-art{visibility:hidden}
+
+/* Compact frenzy sign directly below the left production ticket. */
+.rate .frenzy-badge{left:0;right:auto;top:calc(100% + 2cqw);bottom:auto;margin:0;width:17cqw;max-width:none;height:9cqw;padding:1cqw;transform:none;animation:none;justify-content:center;gap:0}
+.rate .frenzy-power{display:flex;align-items:center;gap:1cqw;margin:0}
+.rate .frenzy-capacity{font-size:2.5cqw;line-height:1}
+.rate .frenzy-multiplier{font-size:5.7cqw;line-height:1;animation:none;transform:none}
+.special-apple{width:10cqw}
+.special-glow[data-kind=lucky]{display:none}
+.special-apple[data-kind=lucky] img{filter:none}
+
+.rate .frenzy-badge{animation:frenzy-compact-shake .18s ease-in-out infinite alternate;transform-origin:center}
+@keyframes frenzy-compact-shake{from{transform:translate(-.4px,.4px) rotate(-2deg)}to{transform:translate(.4px,-.4px) rotate(2deg)}}
+
+.level-times span{font-size:11px;gap:5px;white-space:nowrap}.level-times i,.level-times b{flex-shrink:0}
+
+/* Match the thin depth of the production ticket across primary HUD cards. */
+.phone{--ui-shadow:.35cqw}
+.rank,.nameplate,.balance,.apple-mark,.factory-entry,.quick-factory-upgrade,.wardrobe-back,.build-factory{box-shadow:0 .35cqw #000}
+
+/* Balance the vertical gaps between the header, total and production ticket. */
+.balance{top:9.1%}
+
+.recruit-goal{padding:1.5cqw 1.7cqw;border:1px solid #000;border-radius:2cqw;background:#fffef0;box-shadow:0 .35cqw #000;color:#000}
+.recruit-goal-title{display:block;font-size:2.8cqw;line-height:1.5;margin-bottom:1.3cqw}
+.recruit-goal .factory-entry-track{position:relative;display:block;width:100%;height:3.5cqw}
+.recruit-goal-actions{display:grid;gap:1.2cqw;margin-top:1.5cqw}
+.recruit-goal-actions button{border:1px solid #000;border-radius:1cqw;padding:1.1cqw .5cqw;font-size:2.6cqw;font-weight:bold;box-shadow:0 .35cqw #000}
+#goalNewFarm{background:#d6a6ef}#goalContinue{background:#CBFF8D}
+#goalUnavailable{font-size:2.2cqw;margin:1.5cqw 0 0;line-height:1.4}
+:lang(ja) .recruit-goal-title{font-size:2.6cqw}
+.recruit-goal-fill{display:block;height:100%;background:#CBFF8D;transition:width .25s ease}
+.recruit-goal-label{position:absolute;inset:0;display:grid;place-items:center;font-size:2.2cqw;font-weight:bold;color:#000}
+
+/* Levels replace farm-upgrade progress, while recruitment retains its own bar. */
+#factoryProgressLabel.farm-level{display:block;margin-top:1.3cqw;font-size:2.8cqw;line-height:1.3;font-weight:bold;text-align:left}
+.farm-dialog-level{margin:12px 0;font-size:18px;font-weight:bold;text-align:center}
+#factoryStageProgress.farm-dialog-level{position:static;inset:auto;width:auto;height:auto;display:block;pointer-events:none}
+#factoryProgressLabel.farm-level{position:static;inset:auto}
+:lang(ja) .factory-entry-head b{font-size:2.6cqw;white-space:normal;line-height:1.25;min-width:0;flex:1}
+
+#factoryProgressLabel.farm-level{text-align:center}
+.construction-dust{position:fixed;z-index:1999;pointer-events:none;width:0;height:0}
+
+
+.construction-smoke{position:absolute;left:0;top:0;width:var(--smoke-size);height:var(--smoke-size);overflow:visible;transform:translate(-50%,-50%)}
+
+.farm-awaiting-choice .actions>#openGacha,.farm-awaiting-choice .actions>.wardrobe-entry{visibility:hidden;pointer-events:none}
+.new-farm-dialog{width:min(88vw,390px);max-height:85dvh;overflow:auto;border:1px solid #000;border-radius:18px;padding:24px 20px;background:#fffef0;box-shadow:0 3px #000;color:#000}
+.new-farm-dialog h2{margin:0 24px 16px 0;font-size:21px}.new-farm-dialog p{font-size:14px;line-height:1.7;margin:14px 0}
+.new-farm-close{position:absolute;right:10px;top:8px;border:0;background:none;font-size:25px}
+.farm-inheritance{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:12px 8px;border:1px solid #000;border-radius:10px;background:#fff}
+.farm-inheritance div{text-align:center}.farm-inheritance span{display:block;font-size:12px;line-height:1.5}.farm-inheritance b{display:block;font-size:20px;margin-top:5px;font-variant-numeric:tabular-nums}
+.new-farm-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:20px}.new-farm-actions button{border:1px solid #000;border-radius:8px;padding:11px 5px;font-weight:bold;font-size:14px;box-shadow:0 2px #000}
+#confirmNewFarm{background:#d6a6ef}#goalContinue{background:#CBFF8D}
+.new-farm-dialog #goalUnavailable{font-size:13px;color:#65378c;text-align:center}
+.recruit-goal-actions button{background:#d6a6ef}
+
+.initial-farm-track{position:relative;display:block;height:3.5cqw;margin-top:1.2cqw;border:1px solid #000;border-radius:.8cqw;overflow:hidden;background:#fff}
+#initialFarmFill{display:block;height:100%;background:#CBFF8D;transition:width .25s ease}
+#initialFarmLabel{position:absolute;inset:0;display:grid;place-items:center;font-size:2.3cqw;font-weight:bold}
+.farm-level-confirm{width:100%;border:1px solid #000;border-radius:8px;background:#CBFF8D;padding:12px;font-size:16px;font-weight:bold;box-shadow:0 2px #000}
+
+/* Blend the complete halo layer with the scene, outside the normal FX stack. */
+#frenzyGlowLayer{position:fixed;inset:0;z-index:9;overflow:hidden;pointer-events:none;mix-blend-mode:plus-lighter}
+#frenzyGlowLayer .frenzy-glow{mix-blend-mode:normal;color:#fff34c;-webkit-text-fill-color:#fff34c;-webkit-text-stroke:0;text-shadow:0 0 .25em #fff98a,0 0 .7em #ffe92d,0 0 1.25em #ffdf3299;filter:blur(3px);opacity:.7}
+.frenzy-number:not(.frenzy-glow){text-shadow:none}
+#testBuildComplete,#testFiveEmployees,#testFirstFarmUpgrade{font-size:11px}

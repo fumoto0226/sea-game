@@ -91,38 +91,46 @@ const BUILDINGS=[
  }
 ];
 const UPGRADES=createItemUpgrades(BUILDINGS);
+const t=value=>GameI18n.translate(value);
 const KEY='apple-works-demo-v1',$=id=>document.getElementById(id);
 const RETIRED_ITEM_IDS={"tier-2-0": "tier-farmer-0", "tier-2-1": "tier-farmer-1", "tier-2-2": "tier-farmer-2", "tier-2-3": "tier-farmer-3", "tier-2-4": "tier-farmer-4", "tier-2-5": "tier-farmer-5", "tier-2-6": "tier-farmer-6", "tier-2-7": "tier-farmer-7", "tier-2-8": "tier-farmer-8", "tier-2-9": "tier-farmer-9", "tier-2-10": "tier-farmer-10", "tier-2-11": "tier-farmer-11", "tier-2-12": "tier-farmer-12", "tier-2-13": "tier-farmer-13", "tier-2-14": "tier-farmer-14", "tier-8-0": "tier-shark-0", "tier-8-1": "tier-shark-1", "tier-8-2": "tier-shark-2", "tier-8-3": "tier-shark-3", "tier-8-4": "tier-shark-4", "tier-8-5": "tier-shark-5", "tier-8-6": "tier-shark-6", "tier-8-7": "tier-shark-7", "tier-8-8": "tier-shark-8", "tier-8-9": "tier-shark-9", "tier-8-10": "tier-shark-10", "tier-8-11": "tier-shark-11", "tier-8-12": "tier-shark-12", "tier-8-13": "tier-shark-13", "tier-8-14": "tier-shark-14", "mentor-2": "mentor-staff", "mentor-8": "mentor-shark", "supply-gingerbread-trees": "supply-farmer-0", "supply-pure-black-chocolate-cookies": "supply-farmer-1", "supply-pure-white-chocolate-cookies": "supply-farmer-2", "supply-ladyfingers": "supply-farmer-3", "supply-tuiles": "supply-farmer-4", "supply-chocolate-stuffed-biscuits": "supply-farmer-5", "supply-checker-cookies": "supply-farmer-6", "supply-butter-cookies": "supply-farmer-7", "supply-cream-cookies": "supply-farmer-8", "supply-gingersnaps": "supply-farmer-9", "supply-cinnamon-cookies": "supply-farmer-10", "supply-vanity-cookies": "supply-farmer-11", "supply-cigars": "supply-farmer-12", "supply-pinwheel-cookies": "supply-farmer-13", "supply-vanillekipferl": "supply-shark-0", "supply-battenberg-biscuits": "supply-shark-1", "supply-rosette-cookies": "supply-shark-2", "supply-gangmakers": "supply-shark-3", "supply-welsh-cookies": "supply-shark-4", "supply-raspberry-cheesecake-cookies": "supply-shark-5", "supply-bokkenpootjes": "supply-shark-6", "supply-fat-rascals": "supply-shark-7", "supply-ischler-cookies": "supply-shark-8", "supply-matcha-cookies": "supply-shark-9", "supply-dalgona-cookies": "supply-shark-10", "supply-spicy-cookies": "supply-shark-11", "supply-smile-cookies": "supply-shark-12", "supply-kolachy-cookies": "supply-shark-13"};
-const FACTORY_RESERVED_RECRUITS=[3,6,10];
-function migrateFactorySteps(v){
- if(v.factoryPlan===2)return v.factorySteps||0;
- const n=(v.upgrades||[]).filter(id=>UPGRADES.some(u=>u.id===(RETIRED_ITEM_IDS[id]||id)&&u.kind==='global')).length;
- const old=Number.isInteger(v.factorySteps)?v.factorySteps:n>=26?33:n>=11?13+Math.floor((n-11)/15*20):n>=3?3+Math.floor((n-3)/8*10):n;
- return old>=33?19:old>=13?9+Math.floor((old-13)/20*10):old>=3?3+Math.floor((old-3)/10*6):old;
-}
-const fresh=()=>({apples:0,total:0,handmade:0,playSeconds:0,levelTimes:{},guaranteedGold:freshGuaranteedGold(),factoryPlan:2,factorySteps:0,gifted:BUILDINGS.map(()=>0),goldenClicks:0,owned:BUILDINGS.map(()=>0),upgrades:[],outfit:null,prizes:[0,0,0],draws:0,events:freshEvents()});
+const BUILD_CLICKS_REQUIRED=45;
+const fresh=()=>({schema:102,firstUpgradeAcknowledged:false,farmUpgradeGuide:'done',farmUpgradeGuideTime:0,recruitGoalChoice:null,recruitGoalGuide:'pending',recruitGoalGuideTime:0,phase:'construction',tutorial:'build',tutorialTime:0,introRecruit:false,buildClicks:0,apples:0,total:0,handmade:0,playSeconds:0,milestoneTimes:{construction:null,fiveEmployees:null,firstFarmUpgrade:null},operationSeconds:0,guaranteedGold:freshGuaranteedGold(),goldenClicks:0,owned:BUILDINGS.map(()=>0),upgrades:[],outfit:null,prizes:[0,0,0],draws:0,events:freshEvents()});
 let state=fresh(),bulk=1,displayed=0,last=null,saveClock=0,toastTimer,returnFocus;
-try{const data=JSON.parse(localStorage.getItem(KEY));if(data?.version===1){const v=data.state;if(Number.isFinite(v.apples)&&v.apples>=0&&Array.isArray(v.owned)&&[5,BUILDINGS.length].includes(v.owned.length)&&v.owned.every(n=>Number.isInteger(n)&&n>=0)){state={...fresh(),...v,guaranteedGold:v.guaranteedGold,owned:BUILDINGS.map((_,i)=>v.owned[i]||0),factoryPlan:2,factorySteps:migrateFactorySteps(v),legacyClickUpgrades:Math.max(v.legacyClickUpgrades||0,(v.upgrades||[]).filter(id=>/^mouse-\d+$/.test(id)).length),upgrades:[...new Set((v.upgrades||[]).map(id=>RETIRED_ITEM_IDS[id]||id))].filter(id=>UPGRADES.some(u=>u.id===id))};
-// Temporary bonuses expire in real time, before the first render. Legacy saves
-// have no trustworthy deadline, so discard only their temporary frenzy.
-state.events={...freshEvents(),...state.events,frenzy:Number.isFinite(data.frenzyExpiresAt)?Math.max(0,Math.min(60,(data.frenzyExpiresAt-Date.now())/1000)):0};}}}catch{}
-state.events={...freshEvents(),...state.events};
-state.upgrades=state.upgrades.filter(id=>UPGRADES.some(u=>u.id===id));
-state.gifted=BUILDINGS.map((_,i)=>Math.max(0,Math.min(state.owned[i],Number.isSafeInteger(state.gifted?.[i])?state.gifted[i]:0)));
-state.factorySteps=Math.max(0,Math.min(19,Number.isInteger(state.factorySteps)?state.factorySteps:0));
-state.events.frenzy=Math.min(60,state.events.frenzy);
-state.events.frenzyDuration=60;
-if(state.events.active)state.events.active.remaining=Math.min(13,state.events.active.remaining);
-state.goldenClicks=Number.isSafeInteger(state.goldenClicks)&&state.goldenClicks>=0?state.goldenClicks:0;
-state.events.frenzyDuration=state.events.frenzyDuration===120?120:60;
+try{
+ const data=JSON.parse(localStorage.getItem(KEY)),v=data?.state;
+ if(data?.version===1&&v&&Number.isFinite(v.apples)&&v.apples>=0&&Array.isArray(v.owned)&&v.owned.every(n=>Number.isInteger(n)&&n>=0)){
+  const legacy=![101,102].includes(v.schema);
+  state={...fresh(),...v,schema:102,firstUpgradeAcknowledged:typeof v.firstUpgradeAcknowledged==='boolean'?v.firstUpgradeAcknowledged:null,
+   tutorial:v.tutorial||(v.phase==='operation'?'done':'build'),tutorialTime:Number.isFinite(v.tutorialTime)?v.tutorialTime:0,introRecruit:typeof v.introRecruit==='boolean'?v.introRecruit:(v.phase==='operation'?null:false),
+   phase:legacy?'construction':['construction','ready','operation'].includes(v.phase)?v.phase:'construction',
+   buildClicks:legacy?0:Math.max(0,Math.min(BUILD_CLICKS_REQUIRED,Math.floor(v.buildClicks||0))),
+   owned:BUILDINGS.map((_,i)=>Math.max(0,(v.owned[i]||0)-(legacy?(v.gifted?.[i]||0):0))),
+   upgrades:[...new Set((v.upgrades||[]).map(id=>RETIRED_ITEM_IDS[id]||id))].filter(id=>UPGRADES.some(u=>u.id===id)),
+   operationSeconds:legacy?0:Math.max(0,Number.isFinite(v.operationSeconds)?v.operationSeconds:0),
+   guaranteedGold:legacy?freshGuaranteedGold():v.guaranteedGold,
+   events:legacy?freshEvents():{...freshEvents(),...v.events}
+  };
+  if(!legacy)state.events.frenzy=Number.isFinite(data.frenzyExpiresAt)?Math.max(0,Math.min(60,(data.frenzyExpiresAt-Date.now())/1000)):0;
+ }
+}catch{}
 state.playSeconds=Number.isFinite(state.playSeconds)&&state.playSeconds>=0?state.playSeconds:0;
-// When each factory level was first reached, in seconds of this round.
-state.levelTimes=state.levelTimes&&typeof state.levelTimes==='object'?state.levelTimes:{};
-for(const key of Object.keys(state.levelTimes))if(!Number.isFinite(state.levelTimes[key]))delete state.levelTimes[key];
-state.guaranteedGold=[ [60,120],[240,300] ].map(([min,max],i)=>{
+state.milestoneTimes=Object.fromEntries(['construction','fiveEmployees','firstFarmUpgrade'].map(key=>[key,Number.isFinite(state.milestoneTimes?.[key])&&state.milestoneTimes[key]>=0?state.milestoneTimes[key]:null]));
+state.recruitGoalChoice=state.recruitGoalChoice==='continue'?'continue':null;
+if(!['pending','complete','workers','choice','upgrade','done'].includes(state.recruitGoalGuide))state.recruitGoalGuide='pending';
+state.recruitGoalGuideTime=Number.isFinite(state.recruitGoalGuideTime)?Math.max(0,state.recruitGoalGuideTime):0;
+if(state.tutorial==='newFactory')state.tutorial='factory';
+if(state.recruitGoalChoice!=='continue'&&['done','closing'].includes(state.tutorial))state.tutorial='waitRecruit';
+state.recruitGoalGuide=state.recruitGoalChoice==='continue'?'done':'pending';
+state.goldenClicks=Number.isSafeInteger(state.goldenClicks)&&state.goldenClicks>=0?state.goldenClicks:0;
+state.events.frenzyDuration=60;
+state.guaranteedGold=[[60,120],[240,300]].map(([min,max],i)=>{
  const old=state.guaranteedGold?.[i];
- return old&&Number.isFinite(old.at)&&old.at>=min&&old.at<=max?old:{at:min+Math.random()*(max-min),spawned:state.playSeconds>=max,active:null};
+ return old&&Number.isFinite(old.at)&&old.at>=min&&old.at<=max?old:{at:min+Math.random()*(max-min),spawned:state.operationSeconds>=max,active:null};
 });
+if(state.phase==='construction'&&state.buildClicks>=BUILD_CLICKS_REQUIRED)state.phase='ready';
+if(state.phase!=='operation')state.events=freshEvents();
+for(const key of ['factorySteps','factoryPlan','gifted','legacyClickUpgrades','levelTimes'])delete state[key];
 displayed=state.apples;
 // Keep the existing count-up curve, but sample fast growth at a readable
 // cadence. Skipped intermediate integers never affect the actual balance.
@@ -154,24 +162,20 @@ function totalNumber(n){
 const number=n=>formatNumber(n),precise=n=>formatNumber(n,1);
 // Rebuild purchased effects only when the inventory changes, not for every
 // fish and every animation frame. Counts still feed live mentoring bonuses.
-let effectSource=null,effectCount=-1,effectFactory=-1,effectCache;
+let effectSource=null,effectCount=-1,effectCache;
 function upgradeEffects(){
- if(effectSource===state.upgrades&&effectCount===state.upgrades.length&&effectFactory===state.factorySteps)return effectCache;
- effectSource=state.upgrades;effectCount=state.upgrades.length;effectFactory=state.factorySteps;
+ if(effectSource===state.upgrades&&effectCount===state.upgrades.length)return effectCache;
+ effectSource=state.upgrades;effectCount=state.upgrades.length;
  const owned=new Set(state.upgrades),effects={doubles:BUILDINGS.map(()=>1),mentors:new Set(),fingers:0,mouse:0,global:1};
- effects.doubles[0]=2**(factoryProgress().level-1);
  let fingerFactor=1;
  for(const u of UPGRADES){if(!owned.has(u.id))continue;
   if(u.kind==='double')effects.doubles[u.building]*=2;
   else if(u.kind==='mentor')effects.mentors.add(u.building);
   else if(u.kind==='fingers')fingerFactor*=u.factor;
   else if(u.kind==='mouse')effects.mouse++;
-  if(u.clickPercent)effects.mouse+=u.clickPercent;
-  else if(u.kind==='global'||u.kind==='fish-global')effects.global*=1+u.power/100;
-  if(u.globalBonus)effects.global*=1+u.globalBonus/100;
+  else if(u.kind==='global')effects.global*=1+u.power/100;
  }
- effects.mouse=Math.max(effects.mouse,Math.min(18,state.legacyClickUpgrades||0));
- effects.fingers=UPGRADES.some(u=>u.kind==='fingers'&&u.synergyIndex===0&&owned.has(u.id))?.1*fingerFactor:0;
+ effects.fingers=owned.has('fingers-0')?.1*fingerFactor:0;
  return effectCache=effects;
 }
 const multiplier=i=>{
@@ -201,34 +205,23 @@ function productionNumber(n){
  }
 }
 // Original bulk pricing sums unrounded prices, then rounds the complete batch up.
-function buildingCost(i,n=bulk){let sum=0;for(let k=0;k<n;k++)sum+=BUILDINGS[i].price*1.15**((FACTORY_RESERVED_RECRUITS[i]||0)+state.owned[i]-(state.gifted[i]||0)+k);return Math.ceil(sum)}
-// Factory level gates shop access; the first three recruitment slots are reserved for factory purchases.
-const visible=i=>i===0||factoryProgress().level>=(i===1?2:i===2?3:4);
-const unlocked=u=>{
- if(u.kind==='factory-recruit')return true;
- if(u.kind==='global')return state.total>=u.earned;
- if(u.kind==='mouse')return (state.handmade||0)>=u.handmade;
- return state.owned[u.building]>=u.need&&(u.kind!=='mentor'||state.owned[1]>0);
-};
-const isFishUpgrade=u=>['double','mentor','fingers','fish-global'].includes(u.kind);
-const offers=()=>UPGRADES.filter(u=>isFishUpgrade(u)&&unlocked(u)&&!state.upgrades.includes(u.id)).sort((a,b)=>a.price-b.price);
-const fishUpgrade=i=>{let next=null;for(const u of UPGRADES)if(isFishUpgrade(u)&&(u.kind==='fingers'?0:u.building)===i&&!state.upgrades.includes(u.id)&&unlocked(u)&&(!next||u.price<next.price))next=u;return next};
-const fishItems=i=>UPGRADES.filter(u=>isFishUpgrade(u)&&(u.kind==='fingers'?0:u.building)===i);
-const fishLevel=i=>1+fishItems(i).filter(u=>state.upgrades.includes(u.id)).length;
-const factoryItems=UPGRADES.filter(u=>u.kind==='global').sort((a,b)=>a.price-b.price);
-const FACTORY_RECRUIT_STEPS=FACTORY_RESERVED_RECRUITS.flatMap((count,building)=>
- Array.from({length:count},(_,i)=>({id:`factory-recruit-${building}-${i}`,name:'工厂升级',kind:'factory-recruit',building,count:1,price:Math.ceil(BUILDINGS[building].price*1.15**i)}))
-);
+function buildingCost(i,n=bulk){let sum=0;for(let k=0;k<n;k++){const owned=state.owned[i]+k;sum+=i===0&&state.introRecruit!==null?(state.introRecruit===false&&k===0?1:BUILDINGS[i].price*1.15**Math.max(0,owned-1)):BUILDINGS[i].price*1.15**owned}return Math.ceil(sum)}
+// Original reveal threshold, with two silhouettes previewed by the shop renderer.
+const visible=i=>state.phase==='operation'&&(!tutorialActive()||i===0)&&(i===0||state.owned[i]>0||state.total>=BUILDINGS[i].price);
+// All upgrades are available by price alone; employee/production thresholds are retired.
+const offers=()=>UPGRADES.filter(u=>!state.upgrades.includes(u.id)).sort((a,b)=>a.price-b.price);
+const factoryItems=[...UPGRADES].sort((a,b)=>a.price-b.price);
+const initialFarmItems=factoryItems.slice(0,3);
+function initialFarmCount(){return initialFarmItems.filter(u=>state.upgrades.includes(u.id)).length}
+if(state.firstUpgradeAcknowledged===null)state.firstUpgradeAcknowledged=initialFarmCount()===3;
+if(!['growth','facilities','done'].includes(state.farmUpgradeGuide))state.farmUpgradeGuide='done';
+state.farmUpgradeGuideTime=Number.isFinite(state.farmUpgradeGuideTime)?state.farmUpgradeGuideTime:0;
+function constructionProgress(){return {done:state.buildClicks,total:BUILD_CLICKS_REQUIRED,complete:state.buildClicks>=BUILD_CLICKS_REQUIRED,partsDone:FACTORY_BUILD_ART.parts.filter(part=>part.step>0&&part.threshold<=state.buildClicks).length,partsTotal:11}}
 function factoryProgress(){
- const steps=state.factorySteps;
- if(steps<3)return {stage:0,level:1,done:steps,total:3,complete:false,enhancing:false};
- if(steps<9)return {stage:1,level:2,done:steps-3,total:6,complete:false,enhancing:false};
- if(steps<19)return {stage:2,level:3,done:steps-9,total:10,complete:false,enhancing:false};
- const done=factoryItems.filter(u=>state.upgrades.includes(u.id)).length;
- return {stage:3,level:4,done,total:factoryItems.length,complete:done===factoryItems.length,enhancing:true};
+ const done=state.upgrades.length;
+ return state.phase==='operation'?{done,total:factoryItems.length,complete:done===factoryItems.length,enhancing:true}:{...constructionProgress(),enhancing:false};
 }
-const nextFactoryItem=()=>FACTORY_RECRUIT_STEPS[state.factorySteps]||factoryItems.find(u=>!state.upgrades.includes(u.id))||null;
-let upgradeFish=null;
+const nextFactoryItem=()=>factoryItems.find(u=>!state.upgrades.includes(u.id))||null;
 
 function save(){try{localStorage.setItem(KEY,JSON.stringify({version:1,state,frenzyExpiresAt:state.events.frenzy>0?Date.now()+state.events.frenzy*1000:0}))}catch{}}
 function notify(text){$('toast').textContent=text;$('toast').classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('toast').classList.remove('show'),2000)}
@@ -243,6 +236,7 @@ function drawSpeechOutline(progress){
  $('speechPath').setAttribute('d',`M${left+r} .5H${right-r}Q${right} .5 ${right} ${r+.5}V${bottom-r}Q${right} ${bottom} ${right-r} ${bottom}H${left+r}Q${left} ${bottom} ${left} ${bottom-r}V39L.5 26L${left} 25V${r+.5}Q${left} .5 ${left+r} .5Z`);
 }
 function animatePurchaseSpeech(message){
+ message=t(message);
  cancelAnimationFrame(purchaseSpeechFrame);purchaseSpeechFrame=0;
  const text=$('speechText');$('speechMeasure').textContent=message;
  if(matchMedia('(prefers-reduced-motion: reduce)').matches){drawSpeechOutline(1);text.textContent=message;return}
@@ -264,6 +258,104 @@ function greetPurchase(){
  clearTimeout(purchaseSpeechTimer);purchaseSpeechTimer=setTimeout(()=>speech.hidden=true,Math.max(2700,2100+message.length*60));
 }
 function resetPurchaseSpeech(){talkPending=false;clearTimeout(purchaseSpeechTimer);cancelAnimationFrame(purchaseSpeechFrame);purchaseSpeechFrame=0;purchaseSpeechLast=-Infinity;lastPurchaseSpeech='';$('purchaseSpeech').hidden=true}
+const TUTORIAL_ORDER=['start','click','appleFlight','balance','shop','employee','rateFlying','rate','factory','newFactory','waitRecruit','closing','done'];
+const TUTORIAL_LINES={
+ start:'农场建好了，现在开始制作苹果吧！',click:'现在点击这个按钮，就可以制作苹果',
+ balance:'这里显示了我们拥有的苹果总数',shop:'如果厌倦了自己点击，就在这里雇鱼人来帮忙吧！',
+ employee:'招满5个员工，我们就可以腾出手来，去经营新的农场',rate:'这个鱼人每秒能产出0.1个苹果',
+ factory:'右上角可以查看招募进度，先招满5名鱼人吧！',newFactory:'右上角可以查看招募进度，先招满5名鱼人吧！',closing:'开始干活吧！'
+};
+const tutorialAppleFlights=new Set();
+function tutorialActive(){return state.phase==='operation'&&state.tutorial!=='done'}
+function speakTutorial(message){
+ resetPurchaseSpeech();$('purchaseSpeech').hidden=false;animatePurchaseSpeech(message);talkOnce();
+}
+// Measure layout before entry transforms, so flying rewards target the settled HUD.
+function restingRect(element){
+ const phone=document.querySelector('.phone'),box=phone.getBoundingClientRect();
+ let left=0,top=0,node=element;
+ while(node&&node!==phone){left+=node.offsetLeft;top+=node.offsetTop;node=node.offsetParent}
+ return {left:box.left+left,top:box.top+top,width:element.offsetWidth,height:element.offsetHeight};
+}
+function setTutorialStep(step){
+ state.tutorial=step;state.tutorialTime=0;bulk=1;render();
+ const reveal={appleFlight:'.balance',shop:'.building-shop',rateFlying:'.rate',factory:'.factory-hud'}[step];
+ if(reveal&&!matchMedia('(prefers-reduced-motion: reduce)').matches){const el=document.querySelector(reveal);const from=step==='shop'?'translateY(100%)':step==='factory'?'translateX(110%)':'translateX(-110%)';el.animate([{transform:from,opacity:0},{transform:'translate(0)',opacity:1}],{duration:520,easing:'cubic-bezier(.2,.8,.3,1)'})}
+ if(TUTORIAL_LINES[step])speakTutorial(TUTORIAL_LINES[step]);
+ if(step==='done'){
+  resetPurchaseSpeech();
+  if(!matchMedia('(prefers-reduced-motion: reduce)').matches){
+   const distance=document.querySelector('.phone').clientWidth;
+   for(const [selector,sign]of [['#openGacha',-1],['.actions>.wardrobe-entry',1]]){
+    const animation=document.querySelector(selector).animate([{transform:`translateX(${sign*distance}px)`,opacity:0},{transform:'translateX(0)',opacity:1}],{duration:550,easing:'cubic-bezier(.2,.8,.3,1)'});animation.id='tutorial-action-entry';
+   }
+  }
+ }save();
+}
+function renderTutorial(){
+ const active=tutorialActive(),at=TUTORIAL_ORDER.indexOf(state.tutorial),phone=document.querySelector('.phone');
+ phone.classList.toggle('operation-tutorial',active);
+ phone.classList.toggle('farm-awaiting-choice',state.recruitGoalChoice!=='continue'||state.tutorial==='closing');
+ const visibility={'.balance':at>=2,'.building-shop':at>=4,'.rate':at>=6,'.factory-hud':at>=8};
+ for(const [selector,shown]of Object.entries(visibility))document.querySelector(selector).classList.toggle('tutorial-hidden',active&&!shown);
+ const start=active&&state.tutorial==='start';
+ if(start)$('constructionPanel').hidden=false;
+ $('buildFactory').classList.toggle('tutorial-start',start);$('buildFactory').querySelector('span').textContent=start?'开始制作':'建造农场';
+ if(start)$('buildFactory').disabled=false;
+ $('produce').classList.toggle('tutorial-hidden',start);
+}
+function updateTutorial(dt){
+ if(!tutorialActive())return;state.tutorialTime+=dt;
+ const next={balance:[4.5,'shop'],rate:[4.5,'factory'],factory:[4,'waitRecruit'],newFactory:[4,'waitRecruit'],closing:[3,'done']}[state.tutorial];
+ if(next&&state.tutorialTime>=next[0])setTutorialStep(next[1]);
+ // Resume safely if a worker or flight was interrupted by a reload.
+ if(state.tutorial==='employee'&&state.tutorialTime>18&&!workers.length&&!workerQueue.length)flyRateGain(unitCps(0),0);
+ if(state.tutorial==='rateFlying'&&state.tutorialTime>3)setTutorialStep('rate');
+ if(state.tutorial==='employee'){
+  const text=$('speechText');if(/5个|5人/.test(text.textContent))text.innerHTML=text.textContent.replace(/5个|5人/,value=>`<strong class="tutorial-five">${value}</strong>`);
+ }
+}
+function clearTutorialFlights(){for(const flight of tutorialAppleFlights){flight.cancelled=true;flight.animation?.cancel();flight.image.remove()}tutorialAppleFlights.clear()}
+function flyTutorialApple(){
+ if(state.tutorial==='click')setTutorialStep('appleFlight');
+ const session=state,source=$('produce').getBoundingClientRect(),target=restingRect(document.querySelector('.balance'));
+ const size=document.querySelector('.phone').clientWidth*.075,startX=source.left+source.width*.35,startY=source.top+source.height*.4;
+ const endX=target.left+target.width*.55,endY=target.top+target.height*.5;
+ const image=document.createElement('img');image.src='img/svg/apple.svg';image.alt='';image.className='construction-gear-flight';image.style.cssText=`left:${startX-size/2}px;top:${startY-size/2}px;width:${size}px;height:${size}px`;document.body.append(image);
+ const flight={image,cancelled:false,animation:null};tutorialAppleFlights.add(flight);playClickSound();
+ const arrive=()=>{image.remove();tutorialAppleFlights.delete(flight);if(flight.cancelled||state!==session)return;state.handmade++;earn(1);displayed=state.apples;lastPaintedBalance=null;if(state.tutorial==='appleFlight')setTutorialStep('balance');save();render();};
+ if(matchMedia('(prefers-reduced-motion: reduce)').matches){arrive();return}
+ flight.animation=image.animate([{transform:'translate(0,0) scale(1) rotate(0deg)'},{transform:`translate(${(endX-startX)*.35-18}px,${(endY-startY)*.5}px) scale(.85) rotate(90deg)`,offset:.5},{transform:`translate(${endX-startX}px,${endY-startY}px) scale(.4) rotate(180deg)`}],{duration:500,easing:'cubic-bezier(.3,.1,.5,1)',fill:'forwards'});
+ flight.animation.finished.then(arrive,()=>{});
+}
+function resumeTutorial(){
+ if(!tutorialActive())return;
+ if(state.tutorial==='appleFlight')state.tutorial='click';
+ if(state.tutorial==='employee'){state.tutorialTime=0;queueWorkers(1,unitCps(0),0)}
+ if(state.tutorial==='rateFlying')state.tutorial='rate';
+ render();if(TUTORIAL_LINES[state.tutorial])speakTutorial(TUTORIAL_LINES[state.tutorial]);
+}
+// Construction dialogue follows completed gear arrivals, never every click.
+let constructionGuideStage=-1,constructionGuideElapsed=0,constructionGuideIntroSecond=false;
+const CONSTRUCTION_GUIDES=[
+ '这里空空的，连苹果都没地方上班',
+ '齿轮转起来了！农场也开始长出来了',
+ '东西越来越多，我的老板梦也是',
+ '越来越像农场了！就差最后几把劲',
+ '齐活！再点一下，我们就能开张啦'
+];
+function sayConstructionGuide(message){
+ const speech=$('purchaseSpeech');clearTimeout(purchaseSpeechTimer);speech.hidden=false;animatePurchaseSpeech(message);talkOnce();
+}
+function resetConstructionGuide(){constructionGuideStage=-1;constructionGuideElapsed=0;constructionGuideIntroSecond=false}
+function updateConstructionGuide(dt){
+ if(state.phase!=='construction')return;
+ const stage=state.buildClicks>=44?4:state.buildClicks>=36?3:state.buildClicks>=20?2:state.buildClicks>=8?1:0;
+ if(stage!==constructionGuideStage){constructionGuideStage=stage;constructionGuideElapsed=0;sayConstructionGuide(CONSTRUCTION_GUIDES[stage])}
+ else constructionGuideElapsed+=dt;
+ if(stage===0&&!constructionGuideIntroSecond&&constructionGuideElapsed>=3.8){constructionGuideIntroSecond=true;constructionGuideElapsed=0;sayConstructionGuide('点点蓝色按钮，把第一座农场搭起来吧！')}
+ if(constructionGuideElapsed>6)$('purchaseSpeech').hidden=true;
+}
 function swingRecruitTag(i){
  const motion=document.querySelector(`[data-building="${i}"] .tag-motion`);
  if(!motion||matchMedia('(prefers-reduced-motion: reduce)').matches)return;
@@ -273,16 +365,23 @@ function swingRecruitTag(i){
  motion.style.transformOrigin=`${box.left-frame.left+Number(hole[1])*box.width/view.width}px ${box.top-frame.top+(Number(hole[2])+1.385)*box.height/view.height}px`;
  motion.animate([{transform:'rotate(0deg)'},{transform:'rotate(-12deg)',offset:.16},{transform:'rotate(9deg)',offset:.38},{transform:'rotate(-5deg)',offset:.6},{transform:'rotate(2deg)',offset:.8},{transform:'rotate(0deg)'}],{duration:700,easing:'ease-in-out'});
 }
-function buyBuilding(i){if(!visible(i)||!spend(buildingCost(i)))return false;state.owned[i]+=bulk;swingRecruitTag(i);syncRecruitGains();greetPurchase();queueWorkers(bulk,unitCps(i),i);save();render();notify(`${BUILDINGS[i].name} +${bulk} · 每秒产量 +${productionNumber(currentUnitCps(i)*bulk)} 苹果`);return true}
-function buyUpgrade(id){
- const next=nextFactoryItem(),u=UPGRADES.find(x=>x.id===id)||(next?.id===id?next:null);
- if(!u||!(isFishUpgrade(u)||(['global','factory-recruit'].includes(u.kind)&&next?.id===u.id))||!unlocked(u)||state.upgrades.includes(id)||!spend(u.price))return false;
- if(u.kind==='factory-recruit'){
-  state.factorySteps++;state.owned[u.building]+=u.count;state.gifted[u.building]+=u.count;
-  syncRecruitGains();queueWorkers(u.count,unitCps(u.building),u.building);
- }else {animateItemPurchase(id);state.upgrades.push(id);syncRecruitGains()}
- save();render();notify(u.kind==='factory-recruit'?`${BUILDINGS[u.building].name} +${u.count}`:u.kind==='global'?'工厂强化进度 +1':BUILDINGS[u.kind==='fingers'?0:u.building].name+'升级成功');return true;
+function buyBuilding(i){
+ if(state.phase!=='operation'||!visible(i)||(tutorialActive()&&TUTORIAL_ORDER.indexOf(state.tutorial)<TUTORIAL_ORDER.indexOf('shop'))||!spend(buildingCost(i)))return false;
+ const intro=i===0&&state.introRecruit===false;
+ state.owned[i]+=bulk;if(state.milestoneTimes.fiveEmployees===null&&state.owned.reduce((sum,n)=>sum+n,0)>=5&&state.owned.reduce((sum,n)=>sum+n,0)-bulk<5)state.milestoneTimes.fiveEmployees=state.playSeconds;if(intro)state.introRecruit=true;
+ swingRecruitTag(i);syncRecruitGains();
+ if(intro&&tutorialActive())setTutorialStep('employee');else if(!tutorialActive()&&!['complete','workers','choice','upgrade'].includes(state.recruitGoalGuide)&&state.farmUpgradeGuide==='done')greetPurchase();
+ queueWorkers(bulk,unitCps(i),i);save();render();
+ if(!intro)notify(`${BUILDINGS[i].name} +${bulk} · 每秒产量 +${productionNumber(currentUnitCps(i)*bulk)} 苹果`);return true
 }
+function buyUpgrade(id){
+ const u=UPGRADES.find(x=>x.id===id);
+ if(state.phase!=='operation'||(initialFarmCount()===3&&!state.firstUpgradeAcknowledged)||!u||state.upgrades.includes(id)||!spend(u.price))return false;
+ const initialBefore=initialFarmCount();state.upgrades.push(id);
+ if(initialBefore<3&&initialFarmCount()===3&&state.milestoneTimes.firstFarmUpgrade===null)state.milestoneTimes.firstFarmUpgrade=state.playSeconds;
+ syncRecruitGains();save();render();showFarmLevelComplete();notify(state.firstUpgradeAcknowledged?'强化成功':'设施已完善');return true;
+}
+
 function clickEffects(event,n){
  const r=$('produce').getBoundingClientRect(),scale=document.querySelector('.phone').clientWidth/400;
  const pointer=event&&event.detail>0&&Number.isFinite(event.clientX);
@@ -291,7 +390,7 @@ function clickEffects(event,n){
  f.style.left=x+(Math.random()-.5)*6+'px';f.style.top=y-22*scale+'px';f.style.fontSize=Math.max(16,26*scale)+'px';const duration=(1550+Math.random()*180)/1.2;const startSpeed=90/1.05*1.2,time=duration/1000,distance=startSpeed*time+55*scale;f.style.setProperty('--rise-distance',distance+'px');const slope=startSpeed*time/distance;f.style.setProperty('--rise-ease',`cubic-bezier(.333333,${slope/3},.666667,${(1+slope)/3})`);f.style.animationDuration=duration+'ms';
  // The frenzy halo travels as its own copy underneath the glyph: as a direct
  // child of the effects layer it can blend additively with the other halos.
- if(f.classList.contains('frenzy-number')){const glow=f.cloneNode(true);glow.classList.add('frenzy-glow');glow.setAttribute('aria-hidden','true');$('fx').append(glow);setTimeout(()=>glow.remove(),duration+60)}
+ if(f.classList.contains('frenzy-number')){const glow=f.cloneNode(true);glow.classList.add('frenzy-glow');glow.setAttribute('aria-hidden','true');$('frenzyGlowLayer').append(glow);while($('frenzyGlowLayer').children.length>60)$('frenzyGlowLayer').firstElementChild.remove();setTimeout(()=>glow.remove(),duration+60)}
  $('fx').append(f);setTimeout(()=>f.remove(),duration+60);
  {const apple=document.createElement('span');apple.className='click-apple';const img=document.createElement('img');img.src=state.events.frenzy>0?'img/svg/apple-gold.svg?v=frenzy16':'img/svg/apple.svg';img.alt='';img.draggable=false;apple.append(img);apple.style.left=x+'px';apple.style.top=y+'px';apple.style.width=36*scale+'px';apple.style.setProperty('--travel',(Math.random()<.5?-1:1)*(45+Math.random()*90)*scale+'px');apple.style.setProperty('--fall',220*scale+'px');apple.style.setProperty('--spin',(Math.random()<.5?-1:1)*(220+Math.random()*240)+'deg');$('fx').append(apple);setTimeout(()=>apple.remove(),1050)}
  while($('fx').children.length>120)$('fx').firstElementChild.remove();
@@ -319,10 +418,10 @@ function animateProductionPress(){
  if(state.events.frenzy<=0||matchMedia('(prefers-reduced-motion: reduce)').matches)return;
  productionTap?.cancel();productionTap=$('produce').animate([{transform:'scale(.86)'},{transform:'scale(1.13)',offset:.42},{transform:'scale(1)'}],{duration:240,easing:'cubic-bezier(.18,.8,.3,1)'});productionTap.id='golden-click-impact';
 }
-function produce(event){animateProductionPress();playClickSound();const n=clickPower();state.handmade=(state.handmade||0)+n;earn(n);clickEffects(event,n);render()}
+function produce(event){if(state.phase!=='operation')return;if(tutorialActive()){if(state.tutorial!=='start')flyTutorialApple();return;}animateProductionPress();playClickSound();const n=clickPower();state.handmade=(state.handmade||0)+n;earn(n);clickEffects(event,n);render()}
 
 const FISH_TAGS=["<svg class=\"tag-shape\" aria-hidden=\"true\" width=\"37\" height=\"37\" viewBox=\"0 0 37 37\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\">\n<g filter=\"url(#fishTag1_filter0_d_699_30745)\">\n<path d=\"M18.116 0.200195C28.0104 0.200195 36.032 8.22174 36.032 18.1162C36.0317 28.0105 28.0103 36.0312 18.116 36.0312C8.22166 36.0312 0.201192 28.0105 0.200928 18.1162C0.200928 8.22174 8.22149 0.200195 18.116 0.200195ZM18.1873 2.12012C17.4226 2.12012 16.8026 2.74019 16.8025 3.50488C16.8025 4.26963 17.4225 4.88965 18.1873 4.88965C18.9519 4.88956 19.572 4.26958 19.572 3.50488C19.5719 2.74025 18.9519 2.1202 18.1873 2.12012Z\" fill=\"var(--tag-color)\" stroke-width=\"0.4\" stroke=\"black\"/><g class=\"tag-art\">\n<path d=\"M12.4696 11.4342C10.4861 14.49 9.88381 18.9438 10.0741 24.3173L10.2032 26.055C13.0588 26.6822 20.4016 27.5426 26.0206 25.6113C26.1529 24.5229 26.1529 24.0492 26.1529 23.7743C26.1529 21.8295 26.4264 20.4687 25.5084 16.0261C24.5904 11.5834 19.5598 7.03068 17.0754 6.77686L15.4974 13.886C14.4455 13.3057 13.3936 12.3264 12.4696 11.4342Z\" fill=\"#C5C5C5\" stroke-width=\"0.386236\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke=\"black\"/>\n<path d=\"M30.4333 18.4961C29.2855 17.9173 26.6919 16.6174 25.5009 16.0479L25.1909 18.3251L26.2315 22.1052L30.4333 18.4961Z\" fill=\"#C5C5C5\"/>\n<path d=\"M10.0741 24.3173C9.88381 18.9438 10.4861 14.49 12.4696 11.4342C13.3936 12.3264 14.4455 13.3057 15.4974 13.886L17.0754 6.77686C19.5598 7.03068 24.5904 11.5834 25.5084 16.0261C26.4264 20.4687 26.1529 21.8295 26.1529 23.7743\" stroke-width=\"0.386236\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke=\"black\"/>\n<path d=\"M19.5238 17.372C18.8224 16.6029 18.947 15.4078 20.0816 14.5403C20.9908 13.8528 22.8422 13.682 23.5154 15.1762C24.1886 16.6704 22.532 17.6946 22.007 17.9035C21.482 18.1123 20.2252 18.1411 19.5238 17.372Z\" fill=\"white\" stroke-width=\"0.386236\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke=\"black\"/>\n<ellipse cx=\"21.3743\" cy=\"15.8355\" rx=\"0.50882\" ry=\"0.458749\" transform=\"rotate(-14.9815 21.3743 15.8355)\" fill=\"black\"/>\n<path d=\"M25.501 16.0479C26.6921 16.6174 29.2856 17.9173 30.4334 18.4961L26.2316 22.1052\" stroke-width=\"0.386236\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke=\"black\"/>\n</g></g>\n<defs>\n<filter id=\"fishTag1_filter0_d_699_30745\" x=\"0\" y=\"0\" width=\"36.5156\" height=\"36.7988\" filterUnits=\"userSpaceOnUse\" color-interpolation-filters=\"sRGB\">\n<feFlood flood-opacity=\"0\" result=\"BackgroundImageFix\"/>\n<feColorMatrix in=\"SourceAlpha\" type=\"matrix\" values=\"0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0\" result=\"hardAlpha\"/>\n<feOffset dx=\"0.283689\" dy=\"0.567377\"/>\n<feComposite in2=\"hardAlpha\" operator=\"out\"/>\n<feColorMatrix type=\"matrix\" values=\"0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0\"/>\n<feBlend mode=\"normal\" in2=\"BackgroundImageFix\" result=\"effect1_dropShadow_699_30745\"/>\n<feBlend mode=\"normal\" in=\"SourceGraphic\" in2=\"effect1_dropShadow_699_30745\" result=\"shape\"/>\n</filter>\n</defs>\n</svg>\n", "<svg class=\"tag-shape\" aria-hidden=\"true\" width=\"37\" height=\"37\" viewBox=\"0 0 37 37\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\">\n<g filter=\"url(#fishTag2_filter0_d_699_30784)\">\n<path d=\"M18.115 0.200195C28.0095 0.200195 36.031 8.22174 36.031 18.1162C36.0307 28.0105 28.0093 36.0312 18.115 36.0312C8.22068 36.0312 0.199238 28.0105 0.198975 18.1162C0.198975 8.22174 8.22052 0.200195 18.115 0.200195ZM18.1863 2.12012C17.4216 2.12012 16.8016 2.74019 16.8015 3.50488C16.8015 4.26963 17.4215 4.88965 18.1863 4.88965C18.951 4.88956 19.571 4.26958 19.571 3.50488C19.571 2.74025 18.9509 2.1202 18.1863 2.12012Z\" fill=\"var(--tag-color)\" stroke-width=\"0.4\" stroke=\"black\"/><g class=\"tag-art\">\n<path d=\"M11.9878 11.5187C10.2626 14.1766 9.73872 18.0505 9.90421 22.7243L10.0165 24.2358C12.5003 24.7813 18.887 25.5296 23.7744 23.8498C23.8894 22.9032 23.8894 22.4911 23.8894 22.2521C23.8894 20.5605 24.1274 19.3769 23.3289 15.5127C22.5304 11.6485 18.1549 7.68855 15.9939 7.46777L14.6214 13.6513C13.7065 13.1465 12.7915 12.2947 11.9878 11.5187Z\" fill=\"#C5C5C5\" stroke-width=\"0.386236\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke=\"black\"/>\n<path d=\"M27.6125 17.6612C26.6141 17.1578 24.3583 16.0272 23.3223 15.5317L23.0527 17.5125L23.9578 20.8004L27.6125 17.6612Z\" fill=\"#C5C5C5\"/>\n<path d=\"M9.90421 22.7243C9.73872 18.0505 10.2626 14.1766 11.9878 11.5187C12.7915 12.2947 13.7065 13.1465 14.6214 13.6513L15.9939 7.46777C18.1549 7.68855 22.5304 11.6485 23.3289 15.5127C24.1274 19.3769 23.8894 20.5605 23.8894 22.2521\" stroke-width=\"0.386236\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke=\"black\"/>\n<path d=\"M18.1234 16.6833C17.5133 16.0144 17.6217 14.9749 18.6086 14.2204C19.3994 13.6224 21.0097 13.4738 21.5953 14.7735C22.1808 16.0731 20.74 16.964 20.2833 17.1456C19.8266 17.3273 18.7335 17.3523 18.1234 16.6833Z\" fill=\"white\" stroke-width=\"0.386236\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke=\"black\"/>\n<ellipse cx=\"19.7331\" cy=\"15.3467\" rx=\"0.442569\" ry=\"0.399017\" transform=\"rotate(-14.9815 19.7331 15.3467)\" fill=\"black\"/>\n<path d=\"M23.3225 15.5317C24.3585 16.0272 26.6143 17.1578 27.6127 17.6612L23.958 20.8004\" stroke-width=\"0.386236\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke=\"black\"/>\n<use xlink:href=\"#fishTag2_stroke0_699_30784\" fill=\"#FCDD43\"/>\n<mask id=\"fishTag2_stroke1_699_30784\" fill=\"white\">\n<use xlink:href=\"#fishTag2_stroke0_699_30784\"/>\n</mask>\n<path d=\"M26.5083 17.6808C26.4445 22.9966 25.1719 27.2912 23.666 27.2731C22.16 27.2551 20.9909 22.9311 21.0548 17.6153C21.1186 12.2995 22.3912 8.0049 23.8972 8.02299C25.4031 8.04108 26.5722 12.365 26.5083 17.6808Z\" stroke-width=\"0.78\" stroke=\"black\" mask=\"url(#fishTag2_stroke1_699_30784)\"/>\n<use xlink:href=\"#fishTag2_stroke2_699_30784\" fill=\"#FCDD43\"/>\n<mask id=\"fishTag2_stroke3_699_30784\" fill=\"white\">\n<use xlink:href=\"#fishTag2_stroke2_699_30784\"/>\n</mask>\n<path d=\"M30.2398 18.4786C29.979 20.7672 28.269 22.4516 26.4206 22.2409C24.5721 22.0302 23.2851 20.0042 23.546 17.7156C23.8068 15.427 25.5168 13.7426 27.3652 13.9533C29.2137 14.164 30.5007 16.1901 30.2398 18.4786Z\" stroke-width=\"0.78\" stroke=\"black\" mask=\"url(#fishTag2_stroke3_699_30784)\"/>\n</g></g>\n<defs>\n<filter id=\"fishTag2_filter0_d_699_30784\" x=\"0\" y=\"0\" width=\"36.5146\" height=\"36.7988\" filterUnits=\"userSpaceOnUse\" color-interpolation-filters=\"sRGB\">\n<feFlood flood-opacity=\"0\" result=\"BackgroundImageFix\"/>\n<feColorMatrix in=\"SourceAlpha\" type=\"matrix\" values=\"0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0\" result=\"hardAlpha\"/>\n<feOffset dx=\"0.283689\" dy=\"0.567377\"/>\n<feComposite in2=\"hardAlpha\" operator=\"out\"/>\n<feColorMatrix type=\"matrix\" values=\"0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0\"/>\n<feBlend mode=\"normal\" in2=\"BackgroundImageFix\" result=\"effect1_dropShadow_699_30784\"/>\n<feBlend mode=\"normal\" in=\"SourceGraphic\" in2=\"effect1_dropShadow_699_30784\" result=\"shape\"/>\n</filter>\n<path id=\"fishTag2_stroke0_699_30784\" d=\"M26.5083 17.6808C26.4445 22.9966 25.1719 27.2912 23.666 27.2731C22.16 27.2551 20.9909 22.9311 21.0548 17.6153C21.1186 12.2995 22.3912 8.0049 23.8972 8.02299C25.4031 8.04108 26.5722 12.365 26.5083 17.6808Z\"/>\n<path id=\"fishTag2_stroke2_699_30784\" d=\"M30.2398 18.4786C29.979 20.7672 28.269 22.4516 26.4206 22.2409C24.5721 22.0302 23.2851 20.0042 23.546 17.7156C23.8068 15.427 25.5168 13.7426 27.3652 13.9533C29.2137 14.164 30.5007 16.1901 30.2398 18.4786Z\"/>\n</defs>\n</svg>\n", "<svg class=\"tag-shape\" aria-hidden=\"true\" width=\"40\" height=\"37\" viewBox=\"0 0 40 37\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\">\n<g filter=\"url(#fishTag3_filter0_d_699_30650)\">\n<path d=\"M14.1104 3.17676C16.5258 -0.792087 22.2876 -0.792068 24.7031 3.17676L31.5342 14.4023L31.5391 14.4102L37.8447 25.9395C40.0739 30.0158 37.1928 35.005 32.5479 35.1123L19.4111 35.416H19.4023L6.26465 35.1123C1.6197 35.0048 -1.26086 30.0148 0.96875 25.9385L7.27441 14.4102L7.27832 14.4023H7.2793L14.1104 3.17676ZM19.4062 2.16895C18.6416 2.16907 18.0215 2.78904 18.0215 3.55371C18.0215 4.31838 18.6416 4.93835 19.4062 4.93848C20.171 4.93848 20.791 4.31846 20.791 3.55371C20.791 2.78896 20.171 2.16895 19.4062 2.16895Z\" fill=\"var(--tag-color)\" stroke-width=\"0.4\" stroke=\"black\"/><g class=\"tag-art\">\n<path d=\"M14.1052 10.9299C12.2449 13.7961 11.6799 17.9736 11.8584 23.0137L11.9795 24.6436C14.6579 25.2319 21.5451 26.0389 26.8156 24.2274C26.9396 23.2066 26.9396 22.7622 26.9396 22.5044C26.9396 20.6803 27.1962 19.4039 26.3351 15.2369C25.4741 11.0699 20.7556 6.7996 18.4253 6.56152L16.9452 13.2296C15.9586 12.6853 14.972 11.7667 14.1052 10.9299Z\" fill=\"#C5C5C5\" stroke-width=\"0.386236\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke=\"black\"/>\n<path d=\"M30.9545 17.5536C29.8779 17.0108 27.4452 15.7916 26.3281 15.2573L26.0374 17.3933L27.0134 20.9388L30.9545 17.5536Z\" fill=\"#C5C5C5\"/>\n<path d=\"M11.8584 23.0137C11.6799 17.9736 12.2449 13.7961 14.1052 10.9299C14.972 11.7667 15.9586 12.6853 16.9452 13.2296L18.4253 6.56152C20.7556 6.7996 25.4741 11.0699 26.3351 15.2369C27.1962 19.4039 26.9396 20.6803 26.9396 22.5044\" stroke-width=\"0.386236\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke=\"black\"/>\n<path d=\"M20.7217 16.4993C20.0638 15.7779 20.1808 14.657 21.2449 13.8433C22.0977 13.1984 23.8342 13.0383 24.4657 14.4398C25.0971 15.8413 23.5433 16.802 23.0509 16.9978C22.5584 17.1937 21.3796 17.2207 20.7217 16.4993Z\" fill=\"white\" stroke-width=\"0.386236\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke=\"black\"/>\n<ellipse cx=\"22.4573\" cy=\"15.0584\" rx=\"0.477252\" ry=\"0.430288\" transform=\"rotate(-14.9815 22.4573 15.0584)\" fill=\"black\"/>\n<path d=\"M26.3281 15.2573C27.4453 15.7916 29.8779 17.0108 30.9545 17.5536L27.0135 20.9388\" stroke-width=\"0.386236\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke=\"black\"/>\n<path d=\"M22.2949 26.5998H15.874L16.6989 22.9082H21.2937L22.2949 26.5998Z\" fill=\"#CED2D2\" stroke-width=\"0.4\" stroke-linejoin=\"round\" stroke=\"black\"/>\n<path d=\"M21.9606 27.3796L20.9219 22.8787L26.7354 21.917L27.8894 24.1482L21.9606 27.3796Z\" fill=\"white\" stroke-width=\"0.4\" stroke-linejoin=\"round\" stroke=\"black\"/>\n<path d=\"M21.9606 27.3796L20.9219 22.8787L26.7354 21.917L27.8894 24.1482L21.9606 27.3796Z\" fill=\"white\" stroke-width=\"0.4\" stroke-linejoin=\"round\" stroke=\"black\"/>\n<path d=\"M16.0865 27.3797L17.1252 22.8788L11.8821 21.917L10.728 24.1482L16.0865 27.3797Z\" fill=\"white\" stroke-width=\"0.4\" stroke-linejoin=\"round\" stroke=\"black\"/>\n<path d=\"M20.0457 24.0156V26.4131H20.0447L19.0242 27.8809L18.0046 26.4131H18.0037V24.0176L17.2791 23.0137H20.7693L20.0457 24.0156Z\" fill=\"#FF0000\"/>\n<mask id=\"fishTag3_stroke0_699_30650\" maskUnits=\"userSpaceOnUse\" x=\"16.2791\" y=\"22.0137\" width=\"6\" height=\"7\" fill=\"black\">\n<rect fill=\"white\" x=\"16.2791\" y=\"22.0137\" width=\"6\" height=\"7\"/>\n<path d=\"M20.0457 24.0156V26.4131H20.0447L19.0242 27.8809L18.0046 26.4131H18.0037V24.0176L17.2791 23.0137H20.7693L20.0457 24.0156Z\"/>\n</mask>\n<path d=\"M20.0457 24.0156V26.4131H20.0447L19.0242 27.8809L18.0046 26.4131H18.0037V24.0176L17.2791 23.0137H20.7693L20.0457 24.0156Z\" stroke-width=\"0.8\" stroke=\"black\" mask=\"url(#fishTag3_stroke0_699_30650)\"/>\n</g></g>\n<defs>\n<filter id=\"fishTag3_filter0_d_699_30650\" x=\"0\" y=\"0\" width=\"39.0972\" height=\"36.1836\" filterUnits=\"userSpaceOnUse\" color-interpolation-filters=\"sRGB\">\n<feFlood flood-opacity=\"0\" result=\"BackgroundImageFix\"/>\n<feColorMatrix in=\"SourceAlpha\" type=\"matrix\" values=\"0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0\" result=\"hardAlpha\"/>\n<feOffset dx=\"0.283689\" dy=\"0.567377\"/>\n<feComposite in2=\"hardAlpha\" operator=\"out\"/>\n<feColorMatrix type=\"matrix\" values=\"0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0\"/>\n<feBlend mode=\"normal\" in2=\"BackgroundImageFix\" result=\"effect1_dropShadow_699_30650\"/>\n<feBlend mode=\"normal\" in=\"SourceGraphic\" in2=\"effect1_dropShadow_699_30650\" result=\"shape\"/>\n</filter>\n</defs>\n</svg>\n", "<svg class=\"tag-shape\" aria-hidden=\"true\" width=\"40\" height=\"37\" viewBox=\"0 0 40 37\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\">\n<g filter=\"url(#fishTag4_filter0_d_699_30692)\">\n<path d=\"M14.1104 3.17676C16.5258 -0.792087 22.2876 -0.792068 24.7031 3.17676L31.5342 14.4023L31.5391 14.4102L37.8447 25.9395C40.0739 30.0158 37.1928 35.005 32.5479 35.1123L19.4111 35.416H19.4023L6.26465 35.1123C1.6197 35.0048 -1.26086 30.0148 0.96875 25.9385L7.27441 14.4102L7.27832 14.4023H7.2793L14.1104 3.17676ZM19.4062 2.16895C18.6416 2.16907 18.0215 2.78904 18.0215 3.55371C18.0215 4.31838 18.6416 4.93835 19.4062 4.93848C20.171 4.93848 20.791 4.31846 20.791 3.55371C20.791 2.78896 20.171 2.16895 19.4062 2.16895Z\" fill=\"var(--tag-color)\" stroke-width=\"0.4\" stroke=\"black\"/><g class=\"tag-art\">\n<path d=\"M13.9539 11.9107C12.0965 14.7724 11.5325 18.9431 11.7106 23.9752L11.8316 25.6026C14.5057 26.1899 21.3819 26.9956 26.6439 25.187C26.7678 24.1678 26.7678 23.7242 26.7678 23.4668C26.7678 21.6455 27.0239 20.3712 26.1643 16.2108C25.3046 12.0505 20.5937 7.78701 18.2671 7.54932L16.7894 14.2068C15.8043 13.6633 14.8193 12.7462 13.9539 11.9107Z\" fill=\"#C5C5C5\" stroke-width=\"0.386236\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke=\"black\"/>\n<path d=\"M26.702 22.6644C26.6164 21.0799 26.3785 17.5388 26.1099 16.0505L29.5672 15.6794L28.4935 17.8572L31.4796 18.6502L28.6031 20.2245L31.043 22.0877L26.702 22.6644Z\" fill=\"#FFD400\" stroke-width=\"0.4\" stroke-linejoin=\"round\" stroke=\"black\"/>\n<circle cx=\"29.7756\" cy=\"15.5981\" r=\"0.66988\" transform=\"rotate(-1.20171 29.7756 15.5981)\" fill=\"#FFD400\" stroke=\"black\" stroke-width=\"0.4\"/>\n<circle cx=\"31.5432\" cy=\"18.5702\" r=\"0.66988\" transform=\"rotate(-1.20171 31.5432 18.5702)\" fill=\"#FFD400\" stroke=\"black\" stroke-width=\"0.4\"/>\n<circle cx=\"30.946\" cy=\"22.0116\" r=\"0.66988\" transform=\"rotate(-1.20171 30.946 22.0116)\" fill=\"#FFD400\" stroke=\"black\" stroke-width=\"0.4\"/>\n<path d=\"M14.0088 11.7549C12.1514 14.6166 11.5874 18.7874 11.7656 23.8194L11.8865 25.4468C14.5606 26.0341 21.4369 26.8398 26.6989 25.0313C26.8227 24.0121 26.8227 23.5684 26.8227 23.311C26.8227 21.4898 27.0789 20.2154 26.2192 16.0551C25.3595 11.8947 20.6486 7.63125 18.322 7.39355L16.8443 14.051C15.8592 13.5076 14.8742 12.5904 14.0088 11.7549Z\" fill=\"#C5C5C5\" stroke-width=\"0.386236\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke=\"black\"/>\n<path d=\"M11.7656 23.8194C11.5874 18.7874 12.1514 14.6166 14.0088 11.7549C14.8742 12.5904 15.8592 13.5076 16.8443 14.051L18.322 7.39355C20.6486 7.63125 25.3595 11.8947 26.2192 16.0551C27.0789 20.2154 26.8227 21.4898 26.8227 23.311\" stroke-width=\"0.386236\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke=\"black\"/>\n<path d=\"M20.6147 17.3157C19.9578 16.5954 20.0746 15.4763 21.137 14.664C21.9884 14.0201 23.7222 13.8602 24.3526 15.2594C24.9831 16.6587 23.4318 17.6179 22.9401 17.8134C22.4485 18.009 21.2715 18.0359 20.6147 17.3157Z\" fill=\"white\" stroke-width=\"0.386236\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke=\"black\"/>\n<ellipse cx=\"22.348\" cy=\"15.8768\" rx=\"0.47649\" ry=\"0.429601\" transform=\"rotate(-14.9815 22.348 15.8768)\" fill=\"black\"/>\n<path d=\"M16.2845 24.3418C15.8925 23.9499 12.012 22.9395 11.1756 23.656C10.3392 24.3726 10.8003 25.4344 11.5629 25.8112C14.8977 27.4596 23.9846 26.9182 26.9508 25.7356C27.7071 25.4341 28.2418 24.2125 27.4581 23.5267C26.6744 22.841 23.191 23.6757 21.8195 24.4594C20.595 23.7247 17.0193 23.9009 16.2845 24.3418Z\" fill=\"white\" stroke-width=\"0.4\" stroke-linejoin=\"round\" stroke=\"black\"/>\n</g></g>\n<defs>\n<filter id=\"fishTag4_filter0_d_699_30692\" x=\"0\" y=\"0\" width=\"39.0972\" height=\"36.1836\" filterUnits=\"userSpaceOnUse\" color-interpolation-filters=\"sRGB\">\n<feFlood flood-opacity=\"0\" result=\"BackgroundImageFix\"/>\n<feColorMatrix in=\"SourceAlpha\" type=\"matrix\" values=\"0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0\" result=\"hardAlpha\"/>\n<feOffset dx=\"0.283689\" dy=\"0.567377\"/>\n<feComposite in2=\"hardAlpha\" operator=\"out\"/>\n<feColorMatrix type=\"matrix\" values=\"0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0\"/>\n<feBlend mode=\"normal\" in2=\"BackgroundImageFix\" result=\"effect1_dropShadow_699_30692\"/>\n<feBlend mode=\"normal\" in=\"SourceGraphic\" in2=\"effect1_dropShadow_699_30692\" result=\"shape\"/>\n</filter>\n</defs>\n</svg>\n", "<svg class=\"tag-shape\" aria-hidden=\"true\" width=\"35\" height=\"37\" viewBox=\"0 0 35 37\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\">\n<g filter=\"url(#fishTag5_filter0_d_699_30577)\">\n<path d=\"M28.4832 0.200195C31.7969 0.200195 34.4832 2.88649 34.4832 6.2002V29.3682C34.4829 32.6816 31.7967 35.3682 28.4832 35.3682H6.19995C2.88631 35.3681 0.199951 32.6808 0.199951 29.3672V6.2002C0.199951 2.88654 2.88631 0.200274 6.19995 0.200195H28.4832ZM16.9988 2.12012C16.2341 2.12012 15.6141 2.74019 15.614 3.50488C15.614 4.26963 16.234 4.88965 16.9988 4.88965C17.7635 4.88956 18.3835 4.26958 18.3835 3.50488C18.3835 2.74025 17.7634 2.1202 16.9988 2.12012Z\" fill=\"var(--tag-color)\" stroke-width=\"0.4\" stroke=\"black\"/><g class=\"tag-art\">\n<path d=\"M13.3994 7.21875C14.1457 7.27119 16.0214 7.37207 16.1608 7.35637L15.8127 8.5166L13.3994 7.21875Z\" fill=\"white\" stroke-width=\"0.4\" stroke-linejoin=\"round\" stroke=\"black\"/>\n<path d=\"M13.1646 8.34326C13.9108 8.3957 15.7866 8.49658 15.9259 8.48088L15.5778 9.64111L13.1646 8.34326Z\" fill=\"white\" stroke-width=\"0.4\" stroke-linejoin=\"round\" stroke=\"black\"/>\n<path d=\"M12.7896 9.64111C13.5358 9.69355 15.4116 9.79443 15.5509 9.77873L15.2028 10.939L12.7896 9.64111Z\" fill=\"white\" stroke-width=\"0.4\" stroke-linejoin=\"round\" stroke=\"black\"/>\n<path d=\"M12.5801 10.939C13.3263 10.9914 15.2021 11.0923 15.3415 11.0766L14.9933 12.2368L12.5801 10.939Z\" fill=\"white\" stroke-width=\"0.4\" stroke-linejoin=\"round\" stroke=\"black\"/>\n<path d=\"M11.2436 11.5166C9.29078 14.5253 8.69775 18.9103 8.88508 24.2008L9.01223 25.9118C11.8237 26.5293 19.0532 27.3764 24.5855 25.4749C24.7157 24.4034 24.7157 23.9369 24.7157 23.6663C24.7157 21.7515 24.985 20.4117 24.0812 16.0376C23.1774 11.6636 18.2244 7.18106 15.7783 6.93115L14.2247 13.9306C13.1891 13.3592 12.1534 12.395 11.2436 11.5166Z\" fill=\"#2475C5\" stroke-width=\"0.386236\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke=\"black\"/>\n<path d=\"M28.9303 18.4695C27.8002 17.8997 25.2467 16.6199 24.074 16.0591L23.7688 18.3012L24.7933 22.0229L28.9303 18.4695Z\" fill=\"#2475C5\"/>\n<path d=\"M8.88508 24.2008C8.69775 18.9103 9.29078 14.5253 11.2436 11.5166C12.1534 12.395 13.1891 13.3592 14.2247 13.9306L15.7783 6.93115C18.2244 7.18106 23.1774 11.6636 24.0812 16.0376C24.985 20.4117 24.7157 21.7515 24.7157 23.6663\" stroke-width=\"0.386236\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke=\"black\"/>\n<path d=\"M19.8179 14.1172C20.7092 15.2186 21.4884 16.1218 22.0259 16.7246C21.6491 17.3499 20.9438 17.7626 20.6343 17.8857C20.1174 18.0914 18.8796 18.1196 18.189 17.3623C17.4985 16.6051 17.621 15.4283 18.7378 14.5742C19.0251 14.3569 19.4085 14.1922 19.8179 14.1172Z\" fill=\"white\" stroke-width=\"0.4\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke=\"black\"/>\n<ellipse cx=\"20.0111\" cy=\"15.8498\" rx=\"0.500968\" ry=\"0.451669\" transform=\"rotate(-14.9815 20.0111 15.8498)\" fill=\"black\"/>\n<path d=\"M24.0737 16.0591C25.2464 16.6199 27.7999 17.8997 28.93 18.4695L24.7931 22.0229\" stroke-width=\"0.386236\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke=\"black\"/>\n</g></g>\n<defs>\n<filter id=\"fishTag5_filter0_d_699_30577\" x=\"0\" y=\"0\" width=\"34.9668\" height=\"36.1357\" filterUnits=\"userSpaceOnUse\" color-interpolation-filters=\"sRGB\">\n<feFlood flood-opacity=\"0\" result=\"BackgroundImageFix\"/>\n<feColorMatrix in=\"SourceAlpha\" type=\"matrix\" values=\"0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0\" result=\"hardAlpha\"/>\n<feOffset dx=\"0.283689\" dy=\"0.567377\"/>\n<feComposite in2=\"hardAlpha\" operator=\"out\"/>\n<feColorMatrix type=\"matrix\" values=\"0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0\"/>\n<feBlend mode=\"normal\" in2=\"BackgroundImageFix\" result=\"effect1_dropShadow_699_30577\"/>\n<feBlend mode=\"normal\" in=\"SourceGraphic\" in2=\"effect1_dropShadow_699_30577\" result=\"shape\"/>\n</filter>\n</defs>\n</svg>\n", "<svg class=\"tag-shape\" aria-hidden=\"true\" width=\"35\" height=\"37\" viewBox=\"0 0 35 37\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\">\n<g filter=\"url(#fishTag6_filter0_d_699_30609)\">\n<path d=\"M28.4832 0.200195C31.7969 0.200195 34.4832 2.88649 34.4832 6.2002V29.3682C34.4829 32.6816 31.7967 35.3682 28.4832 35.3682H6.19995C2.88631 35.3681 0.199951 32.6808 0.199951 29.3672V6.2002C0.199951 2.88654 2.88631 0.200274 6.19995 0.200195H28.4832ZM16.9988 2.12012C16.2341 2.12012 15.6141 2.74019 15.614 3.50488C15.614 4.26963 16.234 4.88965 16.9988 4.88965C17.7635 4.88956 18.3835 4.26958 18.3835 3.50488C18.3835 2.74025 17.7634 2.1202 16.9988 2.12012Z\" fill=\"var(--tag-color)\" stroke-width=\"0.4\" stroke=\"black\"/><g class=\"tag-art\">\n<path d=\"M28.0416 18.9394C26.9166 18.4313 24.3745 17.2901 23.207 16.79L23.471 19.1637L23.9232 22.1081L28.0416 18.9394Z\" fill=\"#FCDD43\"/>\n<path d=\"M29.582 19.0078C29.582 19.49 29.1911 19.8808 28.709 19.8808C28.2269 19.8808 27.836 19.49 27.836 19.0078C27.836 18.5257 28.2269 18.1348 28.709 18.1348C29.1911 18.1348 29.582 18.5257 29.582 19.0078Z\" fill=\"#FF00F6\" stroke-width=\"0.481583\" stroke=\"black\"/>\n<path d=\"M25.5148 20.1217C25.5148 20.4527 25.2465 20.721 24.9155 20.721C24.5845 20.721 24.3162 20.4527 24.3162 20.1217C24.3162 19.7907 24.5845 19.5224 24.9155 19.5224C25.2465 19.5224 25.5148 19.7907 25.5148 20.1217Z\" fill=\"#FF2323\"/>\n<circle cx=\"26.4817\" cy=\"19.4534\" r=\"0.668271\" fill=\"#41C681\"/>\n<circle cx=\"24.256\" cy=\"18.5531\" r=\"0.659046\" fill=\"#4FCBF9\"/>\n<path d=\"M11.2449 12.4301C9.41005 15.2571 8.85284 19.3772 9.02885 24.3483L9.14832 25.9559C11.79 26.5361 18.5829 27.332 23.781 25.5454C23.9034 24.5386 23.9034 24.1003 23.9034 23.846C23.9034 22.0468 24.1565 20.788 23.3072 16.6781C22.458 12.5682 17.8042 8.35639 15.5058 8.12158L14.046 14.6983C13.0729 14.1614 12.0998 13.2554 11.2449 12.4301Z\" fill=\"white\" stroke-width=\"0.386236\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke=\"black\"/>\n<path d=\"M9.02885 24.3483C8.85284 19.3772 9.41005 15.2571 11.2449 12.4301C12.0998 13.2554 13.0729 14.1614 14.046 14.6983L15.5058 8.12158C17.8042 8.35639 22.458 12.5682 23.3072 16.6781C24.1565 20.788 23.9034 22.0468 23.9034 23.846\" stroke-width=\"0.386236\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke=\"black\"/>\n<path d=\"M17.7707 17.9236C17.1219 17.2121 17.2372 16.1065 18.2868 15.304C19.1278 14.668 20.8406 14.51 21.4634 15.8923C22.0862 17.2746 20.5537 18.2221 20.068 18.4153C19.5823 18.6085 18.4196 18.6351 17.7707 17.9236Z\" fill=\"white\" stroke-width=\"0.386236\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke=\"black\"/>\n<ellipse cx=\"19.4826\" cy=\"16.5017\" rx=\"0.470712\" ry=\"0.424391\" transform=\"rotate(-14.9815 19.4826 16.5017)\" fill=\"black\"/>\n<path d=\"M23.375 16.7534C24.4551 17.2699 26.807 18.4487 27.8478 18.9735L24.0376 22.2463\" stroke-width=\"0.386236\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke=\"black\"/>\n<path d=\"M17.2459 7.6127C17.2459 8.31998 16.6725 8.89335 15.9652 8.89335C15.2579 8.89335 14.6846 8.31998 14.6846 7.6127C14.6846 6.90541 15.2579 6.33204 15.9652 6.33204C16.6725 6.33204 17.2459 6.90541 17.2459 7.6127Z\" fill=\"#FF0E0E\" stroke-width=\"0.349623\" stroke=\"black\"/>\n<circle cx=\"15.7284\" cy=\"19.9796\" r=\"0.970313\" fill=\"#FF0000\"/>\n</g></g>\n<defs>\n<filter id=\"fishTag6_filter0_d_699_30609\" x=\"0\" y=\"0\" width=\"34.9668\" height=\"36.1357\" filterUnits=\"userSpaceOnUse\" color-interpolation-filters=\"sRGB\">\n<feFlood flood-opacity=\"0\" result=\"BackgroundImageFix\"/>\n<feColorMatrix in=\"SourceAlpha\" type=\"matrix\" values=\"0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0\" result=\"hardAlpha\"/>\n<feOffset dx=\"0.283689\" dy=\"0.567377\"/>\n<feComposite in2=\"hardAlpha\" operator=\"out\"/>\n<feColorMatrix type=\"matrix\" values=\"0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0\"/>\n<feBlend mode=\"normal\" in2=\"BackgroundImageFix\" result=\"effect1_dropShadow_699_30609\"/>\n<feBlend mode=\"normal\" in=\"SourceGraphic\" in2=\"effect1_dropShadow_699_30609\" result=\"shape\"/>\n</filter>\n</defs>\n</svg>\n", "<svg class=\"tag-shape\" aria-hidden=\"true\" width=\"40\" height=\"39\" viewBox=\"0 0 40 39\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\">\n<g filter=\"url(#fishTag7_filter0_d_699_30529)\">\n<path d=\"M15.6794 1.67969C17.8168 -0.292385 21.1105 -0.292384 23.2478 1.67969L28.5769 6.59668C28.8737 6.87043 29.2023 7.10902 29.5544 7.30664L35.8767 10.8555C38.4124 12.2789 39.4305 15.4108 38.2156 18.0527L35.1863 24.6406C35.0176 25.0075 34.8924 25.3931 34.8132 25.7891L33.3914 32.8994C32.8213 35.7508 30.1572 37.6864 27.2693 37.3477L20.0681 36.5029C19.6669 36.4558 19.2604 36.4558 18.8591 36.5029L11.658 37.3477C8.76991 37.6866 6.10605 35.7508 5.53589 32.8994L4.11401 25.7891C4.03485 25.3932 3.9096 25.0074 3.74097 24.6406L0.71167 18.0527C-0.503367 15.4106 0.514528 12.2788 3.05054 10.8555L9.3728 7.30664C9.72503 7.10895 10.0535 6.87055 10.3503 6.59668L15.6794 1.67969ZM19.4636 3.70215C18.699 3.70215 18.0791 4.32233 18.0789 5.08691C18.0789 5.85167 18.6989 6.47168 19.4636 6.47168C20.2282 6.47143 20.8474 5.85151 20.8474 5.08691C20.8472 4.32248 20.228 3.7024 19.4636 3.70215Z\" fill=\"var(--tag-color)\" stroke-width=\"0.4\" stroke=\"black\"/><g class=\"tag-art\">\n<path d=\"M13.7457 13.0162C11.7622 16.072 11.1599 20.5258 11.3502 25.8993L11.4793 27.6371C14.3349 28.2642 21.6777 29.1246 27.2967 27.1933C27.429 26.105 27.429 25.6312 27.429 25.3564C27.429 23.4115 27.7025 22.0507 26.7845 17.6081C25.8665 13.1655 20.836 8.61271 18.3515 8.35889L16.7735 15.4681C15.7216 14.8877 14.6698 13.9084 13.7457 13.0162Z\" fill=\"#C5C5C5\" stroke-width=\"0.386236\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke=\"black\"/>\n<path d=\"M13.7457 13.0162C11.7622 16.072 11.1599 20.5258 11.3502 25.8993L11.4793 27.6371C14.3349 28.2642 21.6777 29.1246 27.2967 27.1933C27.429 26.105 27.429 25.6312 27.429 25.3564C27.429 23.4115 27.7025 22.0507 26.7845 17.6081C25.8665 13.1655 20.836 8.61271 18.3515 8.35889L16.7735 15.4681C15.7216 14.8877 14.6698 13.9084 13.7457 13.0162Z\" fill=\"#FFBD2D\" stroke-width=\"0.386236\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke=\"black\"/>\n<path d=\"M31.7094 20.0781C30.5616 19.4993 27.9681 18.1995 26.777 17.6299L26.467 19.9072L27.5076 23.6872L31.7094 20.0781Z\" fill=\"#FFBD2D\"/>\n<path d=\"M11.3502 25.8993C11.1599 20.5258 11.7622 16.072 13.7457 13.0162C14.6698 13.9084 15.7216 14.8877 16.7735 15.4681L18.3515 8.35889C20.836 8.61271 25.8665 13.1655 26.7845 17.6081C27.7025 22.0507 27.429 23.4115 27.429 25.3564\" stroke-width=\"0.386236\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke=\"black\"/>\n<path d=\"M20.7999 18.954C20.0985 18.1849 20.2231 16.9898 21.3577 16.1223C22.2669 15.4348 24.1183 15.264 24.7915 16.7582C25.4647 18.2525 23.8082 19.2767 23.2831 19.4855C22.7581 19.6943 21.5013 19.7231 20.7999 18.954Z\" fill=\"#38C15A\" stroke-width=\"0.386236\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke=\"black\"/>\n<ellipse cx=\"22.6504\" cy=\"17.4176\" rx=\"0.50882\" ry=\"0.458749\" transform=\"rotate(-14.9815 22.6504 17.4176)\" fill=\"black\"/>\n<path d=\"M26.7771 17.6299C27.9682 18.1995 30.5617 19.4993 31.7095 20.0781L27.5078 23.6872\" stroke-width=\"0.386236\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke=\"black\"/>\n</g></g>\n<defs>\n<filter id=\"fishTag7_filter0_d_699_30529\" x=\"0\" y=\"0\" width=\"39.2102\" height=\"38.1528\" filterUnits=\"userSpaceOnUse\" color-interpolation-filters=\"sRGB\">\n<feFlood flood-opacity=\"0\" result=\"BackgroundImageFix\"/>\n<feColorMatrix in=\"SourceAlpha\" type=\"matrix\" values=\"0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0\" result=\"hardAlpha\"/>\n<feOffset dx=\"0.283689\" dy=\"0.567377\"/>\n<feComposite in2=\"hardAlpha\" operator=\"out\"/>\n<feColorMatrix type=\"matrix\" values=\"0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0\"/>\n<feBlend mode=\"normal\" in2=\"BackgroundImageFix\" result=\"effect1_dropShadow_699_30529\"/>\n<feBlend mode=\"normal\" in=\"SourceGraphic\" in2=\"effect1_dropShadow_699_30529\" result=\"shape\"/>\n</filter>\n</defs>\n</svg>\n", "<svg class=\"tag-shape\" aria-hidden=\"true\" width=\"40\" height=\"39\" viewBox=\"0 0 40 39\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\">\n<g filter=\"url(#fishTag8_filter0_d_699_30552)\">\n<path d=\"M15.6785 1.67871C17.8158 -0.293307 21.1095 -0.293197 23.2468 1.67871L28.5759 6.5957C28.8728 6.86955 29.2013 7.10798 29.5535 7.30566L35.8757 10.8545C38.4117 12.2778 39.4296 15.4096 38.2146 18.0518L35.1853 24.6396C35.0166 25.0066 34.8915 25.3921 34.8123 25.7881L33.3904 32.8984C32.8204 35.7501 30.1565 37.6857 27.2683 37.3467L20.0671 36.502C19.6658 36.4549 19.2594 36.4548 18.8582 36.502L11.657 37.3467C8.76885 37.6856 6.10488 35.75 5.53491 32.8984L4.11304 25.7881C4.03384 25.3921 3.9087 25.0065 3.73999 24.6396L0.710693 18.0518C-0.504192 15.4097 0.513679 12.2778 3.04956 10.8545L9.37183 7.30566C9.72408 7.10797 10.0525 6.86959 10.3494 6.5957L15.6785 1.67871ZM19.4626 3.70215C18.6979 3.7022 18.0779 4.32219 18.0779 5.08691C18.0779 5.8516 18.698 6.47163 19.4626 6.47168C20.2274 6.47168 20.8474 5.85163 20.8474 5.08691C20.8474 4.32216 20.2274 3.70215 19.4626 3.70215Z\" fill=\"var(--tag-color)\" stroke-width=\"0.4\" stroke=\"black\"/><g class=\"tag-art\">\n<path d=\"M13.7452 13.0157C11.7618 16.0716 11.1594 20.5253 11.3497 25.8988L11.4788 27.6366C14.3344 28.2638 21.6772 29.1241 27.2962 27.1928C27.4285 26.1045 27.4285 25.6307 27.4285 25.3559C27.4285 23.411 27.702 22.0503 26.784 17.6076C25.866 13.165 20.8355 8.61222 18.351 8.3584L16.773 15.4676C15.7212 14.8872 14.6693 13.9079 13.7452 13.0157Z\" fill=\"#C5C5C5\" stroke-width=\"0.386236\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke=\"black\"/>\n<use xlink:href=\"#fishTag8_stroke0_699_30552\" fill=\"#4BCD74\"/>\n<mask id=\"fishTag8_stroke1_699_30552\" maskUnits=\"userSpaceOnUse\" x=\"25.4068\" y=\"19.6287\" width=\"8.11056\" height=\"7.34466\" fill=\"black\">\n<rect fill=\"white\" x=\"25.4068\" y=\"19.6287\" width=\"8.11056\" height=\"7.34466\"/>\n<use xlink:href=\"#fishTag8_stroke0_699_30552\"/>\n</mask>\n<path d=\"M26.8668 21.8163C28.656 21.5251 30.3229 22.752 30.742 23.3009C31.2257 23.2199 31.6923 23.5324 31.7972 24.0168C31.9048 24.5155 31.5882 25.007 31.0896 25.1151C30.5908 25.223 30.0985 24.9065 29.9903 24.4077C29.9455 24.2006 29.974 23.9943 30.0582 23.8165C28.9792 23.4674 27.5077 22.6901 27.1175 22.9751C26.6741 23.2994 26.7656 22.3378 26.8668 21.8163Z\" stroke-width=\"0.8\" stroke=\"black\" mask=\"url(#fishTag8_stroke1_699_30552)\"/>\n<path d=\"M13.7452 13.0157C11.7618 16.0716 11.1594 20.5253 11.3497 25.8988L11.4788 27.6366C14.3344 28.2638 21.6772 29.1241 27.2962 27.1928C27.4285 26.1045 27.4285 25.6307 27.4285 25.3559C27.4285 23.411 27.702 22.0503 26.784 17.6076C25.866 13.165 20.8355 8.61222 18.351 8.3584L16.773 15.4676C15.7212 14.8872 14.6693 13.9079 13.7452 13.0157Z\" fill=\"#4BCD74\" stroke-width=\"0.386236\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke=\"black\"/>\n<path d=\"M11.3497 25.8988C11.1594 20.5253 11.7618 16.0716 13.7452 13.0157C14.6693 13.9079 15.7212 14.8872 16.773 15.4676L18.351 8.3584C20.8355 8.61222 25.866 13.165 26.784 17.6076C27.702 22.0503 27.4285 23.411 27.4285 25.3559\" stroke-width=\"0.386236\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke=\"black\"/>\n<path d=\"M20.7994 18.9535C20.098 18.1844 20.2227 16.9893 21.3572 16.1218C22.2664 15.4343 24.1178 15.2635 24.791 16.7577C25.4642 18.252 23.8077 19.2762 23.2826 19.485C22.7576 19.6939 21.5008 19.7226 20.7994 18.9535Z\" fill=\"black\" stroke-width=\"0.386236\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke=\"black\"/>\n<ellipse cx=\"22.6502\" cy=\"17.4171\" rx=\"0.50882\" ry=\"0.458749\" transform=\"rotate(-14.9815 22.6502 17.4171)\" fill=\"white\"/>\n</g></g>\n<defs>\n<filter id=\"fishTag8_filter0_d_699_30552\" x=\"0\" y=\"0\" width=\"39.21\" height=\"38.1533\" filterUnits=\"userSpaceOnUse\" color-interpolation-filters=\"sRGB\">\n<feFlood flood-opacity=\"0\" result=\"BackgroundImageFix\"/>\n<feColorMatrix in=\"SourceAlpha\" type=\"matrix\" values=\"0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0\" result=\"hardAlpha\"/>\n<feOffset dx=\"0.283689\" dy=\"0.567377\"/>\n<feComposite in2=\"hardAlpha\" operator=\"out\"/>\n<feColorMatrix type=\"matrix\" values=\"0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0\"/>\n<feBlend mode=\"normal\" in2=\"BackgroundImageFix\" result=\"effect1_dropShadow_699_30552\"/>\n<feBlend mode=\"normal\" in=\"SourceGraphic\" in2=\"effect1_dropShadow_699_30552\" result=\"shape\"/>\n</filter>\n<path id=\"fishTag8_stroke0_699_30552\" d=\"M26.8668 21.8163C28.656 21.5251 30.3229 22.752 30.742 23.3009C31.2257 23.2199 31.6923 23.5324 31.7972 24.0168C31.9048 24.5155 31.5882 25.007 31.0896 25.1151C30.5908 25.223 30.0985 24.9065 29.9903 24.4077C29.9455 24.2006 29.974 23.9943 30.0582 23.8165C28.9792 23.4674 27.5077 22.6901 27.1175 22.9751C26.6741 23.2994 26.7656 22.3378 26.8668 21.8163Z\"/>\n</defs>\n</svg>\n", "<svg class=\"tag-shape\" aria-hidden=\"true\" width=\"39\" height=\"38\" viewBox=\"0 0 39 38\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\">\n<g filter=\"url(#fishTag9_filter0_d_699_30470)\">\n<path d=\"M14.9578 1.9082C17.1526 -0.369865 20.8001 -0.369864 22.9949 1.9082L24.571 3.54395C25.4313 4.4369 26.5836 4.9916 27.8181 5.10742L30.0798 5.31934C33.2294 5.61485 35.5041 8.46721 35.0916 11.6035L34.7947 13.8555C34.6329 15.0847 34.9174 16.3318 35.5964 17.3691L36.8406 19.2695C38.5733 21.9162 37.7617 25.4725 35.0525 27.1055L33.1062 28.2783C32.0445 28.9182 31.2478 29.9182 30.8601 31.0957L30.1492 33.2539C29.1601 36.2587 25.8738 37.8415 22.908 36.7412L20.7781 35.9512C19.6156 35.5199 18.337 35.5199 17.1746 35.9512L15.0447 36.7412C12.0788 37.8415 8.79257 36.2587 7.80347 33.2539L7.09253 31.0957C6.70487 29.9182 5.90814 28.9182 4.84644 28.2783L2.90015 27.1055C0.190913 25.4725 -0.620631 21.9162 1.11206 19.2695L2.3562 17.3691C3.03521 16.3318 3.31973 15.0847 3.15796 13.8555L2.86108 11.6035C2.44858 8.46722 4.72327 5.61485 7.8728 5.31934L10.1345 5.10742C11.369 4.9916 12.5213 4.4369 13.3816 3.54395L14.9578 1.9082ZM18.9763 3.26758C18.2118 3.26765 17.5918 3.88688 17.5916 4.65137C17.5916 5.41608 18.2116 6.03606 18.9763 6.03613C19.7411 6.03613 20.3611 5.41612 20.3611 4.65137C20.3608 3.88684 19.7409 3.26758 18.9763 3.26758Z\" fill=\"var(--tag-color)\" stroke-width=\"0.4\" stroke=\"black\"/><g class=\"tag-art\">\n<path d=\"M13.2589 12.5811C11.2754 15.637 10.6731 20.0907 10.8634 25.4642L10.9925 27.202C13.8481 27.8292 21.1909 28.6895 26.8099 26.7583C26.9422 25.6699 26.9422 25.1962 26.9422 24.9213C26.9422 22.9765 27.2157 21.6157 26.2977 17.1731C25.3797 12.7304 20.3491 8.17765 17.8647 7.92383L16.2867 15.033C15.2348 14.4527 14.1829 13.4733 13.2589 12.5811Z\" fill=\"#C5C5C5\" stroke-width=\"0.386236\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke=\"black\"/>\n<path d=\"M15.9116 8.01221L17.8039 8.67882L17.6313 9.73261L15.6746 9.367L15.9116 8.01221Z\" fill=\"white\" stroke-width=\"0.4\" stroke-linejoin=\"round\" stroke=\"black\"/>\n<path d=\"M15.4034 10.2809L17.4077 10.3706L17.5478 11.4292L15.5691 11.6463L15.4034 10.2809Z\" fill=\"white\" stroke-width=\"0.4\" stroke-linejoin=\"round\" stroke=\"black\"/>\n<path d=\"M13.2586 12.6695C11.2752 15.7254 10.6729 20.1791 10.8631 25.5526L10.9923 27.2904C13.8479 27.9176 21.1906 28.7779 26.8097 26.8466C26.9419 25.7583 26.9419 25.2845 26.9419 25.0097C26.9419 23.0648 27.2155 21.7041 26.2975 17.2614C25.3795 12.8188 20.3489 8.26603 17.8644 8.01221L16.2865 15.1214C15.2346 14.541 14.1827 13.5617 13.2586 12.6695Z\" fill=\"#FEF455\" stroke-width=\"0.386236\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke=\"black\"/>\n<ellipse cx=\"14.1321\" cy=\"23.9339\" rx=\"1.36174\" ry=\"1.96695\" transform=\"rotate(28.9199 14.1321 23.9339)\" fill=\"#C2C104\"/>\n<circle cx=\"20.2954\" cy=\"18.0407\" r=\"1.2585\" fill=\"#C2C104\"/>\n<circle cx=\"22.812\" cy=\"22.7565\" r=\"1.2585\" fill=\"#C2C104\"/>\n<ellipse cx=\"17.9143\" cy=\"26.2718\" rx=\"1.2585\" ry=\"0.818196\" transform=\"rotate(-31.4145 17.9143 26.2718)\" fill=\"#C2C104\"/>\n<path d=\"M31.2226 19.7314C30.0748 19.1527 27.4812 17.8528 26.2902 17.2832L25.9802 19.5605L27.0208 23.3405L31.2226 19.7314Z\" fill=\"#FEF455\"/>\n<path d=\"M10.8631 25.5526C10.6729 20.1791 11.2752 15.7254 13.2586 12.6695C14.1827 13.5617 15.2346 14.541 16.2865 15.1214L17.8644 8.01221C20.3489 8.26603 25.3795 12.8188 26.2975 17.2614C27.2155 21.7041 26.9419 23.0648 26.9419 25.0097\" stroke-width=\"0.386236\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke=\"black\"/>\n<path d=\"M20.3129 18.6068C19.6114 17.8377 19.7361 16.6426 20.8707 15.7752C21.7798 15.0876 23.6312 14.9169 24.3044 16.4111C24.9777 17.9053 23.3211 18.9295 22.7961 19.1383C22.2711 19.3472 21.0143 19.376 20.3129 18.6068Z\" fill=\"white\" stroke-width=\"0.386236\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke=\"black\"/>\n<ellipse cx=\"22.1636\" cy=\"17.0704\" rx=\"0.50882\" ry=\"0.458749\" transform=\"rotate(-14.9815 22.1636 17.0704)\" fill=\"black\"/>\n<path d=\"M26.2898 17.2832C27.4809 17.8528 30.0744 19.1527 31.2222 19.7314L27.0205 23.3405\" stroke-width=\"0.386236\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke=\"black\"/>\n</g></g>\n<defs>\n<filter id=\"fishTag9_filter0_d_699_30470\" x=\"0\" y=\"0\" width=\"38.2368\" height=\"37.8594\" filterUnits=\"userSpaceOnUse\" color-interpolation-filters=\"sRGB\">\n<feFlood flood-opacity=\"0\" result=\"BackgroundImageFix\"/>\n<feColorMatrix in=\"SourceAlpha\" type=\"matrix\" values=\"0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0\" result=\"hardAlpha\"/>\n<feOffset dx=\"0.283689\" dy=\"0.567377\"/>\n<feComposite in2=\"hardAlpha\" operator=\"out\"/>\n<feColorMatrix type=\"matrix\" values=\"0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0\"/>\n<feBlend mode=\"normal\" in2=\"BackgroundImageFix\" result=\"effect1_dropShadow_699_30470\"/>\n<feBlend mode=\"normal\" in=\"SourceGraphic\" in2=\"effect1_dropShadow_699_30470\" result=\"shape\"/>\n</filter>\n</defs>\n</svg>\n", "<svg class=\"tag-shape\" aria-hidden=\"true\" width=\"39\" height=\"38\" viewBox=\"0 0 39 38\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\">\n<g filter=\"url(#fishTag10_filter0_d_699_30499)\">\n<path d=\"M14.9578 1.90918C17.1526 -0.3691 20.8 -0.369051 22.9949 1.90918L24.571 3.54492C25.4313 4.43783 26.5837 4.99253 27.8181 5.1084L30.0798 5.32031C33.2295 5.61584 35.5043 8.46806 35.0916 11.6045L34.7947 13.8564C34.6329 15.0857 34.9174 16.3328 35.5964 17.3701L36.8406 19.2705C38.5733 21.9172 37.7618 25.4735 35.0525 27.1064L33.1062 28.2793C32.0445 28.9193 31.2477 29.9192 30.8601 31.0967L30.1492 33.2549C29.16 36.2595 25.8738 37.8425 22.908 36.7422L20.7781 35.9521C19.6156 35.5209 18.337 35.5209 17.1746 35.9521L15.0447 36.7422C12.0789 37.8423 8.79255 36.2595 7.80347 33.2549L7.09253 31.0967C6.70491 29.9191 5.90823 28.9193 4.84644 28.2793L2.90015 27.1064C0.19096 25.4735 -0.620484 21.9171 1.11206 19.2705L2.3562 17.3701C3.03531 16.3327 3.31973 15.0857 3.15796 13.8564L2.86108 11.6045C2.44838 8.46814 4.72329 5.61597 7.8728 5.32031L10.1345 5.1084C11.369 4.99259 12.5213 4.43778 13.3816 3.54492L14.9578 1.90918ZM18.9763 3.26758C18.2118 3.26778 17.5916 3.88774 17.5916 4.65234C17.5916 5.41697 18.2117 6.03691 18.9763 6.03711C19.7411 6.03711 20.3611 5.4171 20.3611 4.65234C20.3611 3.88761 19.7411 3.26758 18.9763 3.26758Z\" fill=\"var(--tag-color)\" stroke-width=\"0.4\" stroke=\"black\"/><g class=\"tag-art\">\n<path d=\"M13.2591 12.5816C11.2757 15.6375 10.6734 20.0912 10.8636 25.4647L10.9928 27.2025C13.8483 27.8297 21.1911 28.69 26.8102 26.7588C26.9424 25.6704 26.9424 25.1966 26.9424 24.9218C26.9424 22.977 27.216 21.6162 26.298 17.1735C25.38 12.7309 20.3494 8.17814 17.8649 7.92432L16.2869 15.0335C15.2351 14.4532 14.1832 13.4738 13.2591 12.5816Z\" fill=\"#C5C5C5\" stroke-width=\"0.386236\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke=\"black\"/>\n<use xlink:href=\"#fishTag10_stroke0_699_30499\" fill=\"#C5C5C5\"/>\n<use xlink:href=\"#fishTag10_stroke0_699_30499\" fill=\"url(#fishTag10_paint0_linear_699_30499)\"/>\n<use xlink:href=\"#fishTag10_stroke0_699_30499\" fill=\"#96FF6F\"/>\n<use xlink:href=\"#fishTag10_stroke0_699_30499\" fill=\"url(#fishTag10_paint1_linear_699_30499)\"/>\n<use xlink:href=\"#fishTag10_stroke1_699_30499\" fill=\"#C5C5C5\"/>\n<use xlink:href=\"#fishTag10_stroke1_699_30499\" fill=\"url(#fishTag10_paint2_linear_699_30499)\"/>\n<path d=\"M10.8631 25.5707C10.6729 20.1972 11.2752 15.7434 13.2586 12.6876C14.1827 13.5798 15.2346 14.5591 16.2865 15.1395L17.8644 8.03027C20.3489 8.28409 25.3795 12.8369 26.2975 17.2795C27.2155 21.7221 26.9419 23.0829 26.9419 25.0277C26.9419 25.3026 26.9419 25.7764 26.8097 26.8647C21.1906 28.796 13.8479 27.9356 10.9923 27.3084L10.8631 25.5707Z\" stroke-width=\"0.386236\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke=\"black\"/>\n<path d=\"M10.8631 25.5707C10.6729 20.1972 11.2752 15.7434 13.2586 12.6876C14.1827 13.5798 15.2346 14.5591 16.2865 15.1395L17.8644 8.03027C20.3489 8.28409 25.3795 12.8369 26.2975 17.2795C27.2155 21.7221 26.9419 23.0829 26.9419 25.0277\" stroke-width=\"0.386236\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke=\"black\"/>\n<path d=\"M20.3129 18.6254C19.6114 17.8563 19.7361 16.6612 20.8707 15.7937C21.7798 15.1062 23.6312 14.9354 24.3044 16.4296C24.9777 17.9238 23.3211 18.9481 22.7961 19.1569C22.2711 19.3657 21.0143 19.3945 20.3129 18.6254Z\" fill=\"white\" stroke-width=\"0.386236\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke=\"black\"/>\n<ellipse cx=\"22.1633\" cy=\"17.089\" rx=\"0.50882\" ry=\"0.458749\" transform=\"rotate(-14.9815 22.1633 17.089)\" fill=\"black\"/>\n<path d=\"M26.29 17.3013C27.4811 17.8709 30.0746 19.1707 31.2225 19.7495L27.0207 23.3586\" stroke-width=\"0.386236\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke=\"black\"/>\n</g></g>\n<defs>\n<filter id=\"fishTag10_filter0_d_699_30499\" x=\"0\" y=\"0\" width=\"38.2368\" height=\"37.8594\" filterUnits=\"userSpaceOnUse\" color-interpolation-filters=\"sRGB\">\n<feFlood flood-opacity=\"0\" result=\"BackgroundImageFix\"/>\n<feColorMatrix in=\"SourceAlpha\" type=\"matrix\" values=\"0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0\" result=\"hardAlpha\"/>\n<feOffset dx=\"0.283689\" dy=\"0.567377\"/>\n<feComposite in2=\"hardAlpha\" operator=\"out\"/>\n<feColorMatrix type=\"matrix\" values=\"0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0\"/>\n<feBlend mode=\"normal\" in2=\"BackgroundImageFix\" result=\"effect1_dropShadow_699_30499\"/>\n<feBlend mode=\"normal\" in=\"SourceGraphic\" in2=\"effect1_dropShadow_699_30499\" result=\"shape\"/>\n</filter>\n<linearGradient id=\"fishTag10_paint0_linear_699_30499\" x1=\"24.8987\" y1=\"26.2717\" x2=\"30.6074\" y2=\"17.4746\" gradientUnits=\"userSpaceOnUse\">\n<stop offset=\"0.308328\" stop-color=\"#CD93FF\"/>\n<stop offset=\"1\" stop-color=\"#93EDFF\"/>\n</linearGradient>\n<linearGradient id=\"fishTag10_paint1_linear_699_30499\" x1=\"28.6014\" y1=\"17.3013\" x2=\"28.6014\" y2=\"23.3586\" gradientUnits=\"userSpaceOnUse\">\n<stop stop-color=\"#96FF6F\"/>\n<stop offset=\"1\" stop-color=\"#7FFFD9\"/>\n</linearGradient>\n<linearGradient id=\"fishTag10_paint2_linear_699_30499\" x1=\"28.0652\" y1=\"40.1106\" x2=\"15.8506\" y2=\"1.7527\" gradientUnits=\"userSpaceOnUse\">\n<stop stop-color=\"#FF75C3\"/>\n<stop offset=\"0.2\" stop-color=\"#FFA647\"/>\n<stop offset=\"0.4\" stop-color=\"#FFE83F\"/>\n<stop offset=\"0.6\" stop-color=\"#9FFF5B\"/>\n<stop offset=\"0.8\" stop-color=\"#70E2FF\"/>\n<stop offset=\"1\" stop-color=\"#CD93FF\"/>\n</linearGradient>\n<path id=\"fishTag10_stroke0_699_30499\" d=\"M31.2226 19.7495C30.0748 19.1707 27.4812 17.8709 26.2902 17.3013L25.9802 19.5786L27.0208 23.3586L31.2226 19.7495Z\"/>\n<path id=\"fishTag10_stroke1_699_30499\" d=\"M13.2586 12.6876C11.2752 15.7434 10.6729 20.1972 10.8631 25.5707L10.9923 27.3084C13.8479 27.9356 21.1906 28.796 26.8097 26.8647C26.9419 25.7764 26.9419 25.3026 26.9419 25.0277C26.9419 23.0829 27.2155 21.7221 26.2975 17.2795C25.3795 12.8369 20.3489 8.28409 17.8644 8.03027L16.2865 15.1395C15.2346 14.5591 14.1827 13.5798 13.2586 12.6876Z\"/>\n</defs>\n</svg>\n"];
-$('buildings').innerHTML=BUILDINGS.map((b,i)=>`<div class="building" data-building="${i}" role="group"><button class="recruit-hit" aria-label="招募${b.name}"></button><button class="fish-upgrade" data-fish-upgrade="${i}" aria-label="升级${b.name}" hidden><span class="fish-level">Lv.1</span><svg viewBox="0 0 32 36" aria-hidden="true"><path d="M16 2L30 17H22V33H10V17H2Z" fill="currentColor" stroke="#000" stroke-width="1" vector-effect="non-scaling-stroke" stroke-linejoin="round"/></svg></button><span class="tile"><span class="tag-motion">${FISH_TAGS[i]}<span class="gain"></span></span><span class="owned"></span></span><span class="cost"><svg class="price-outline" viewBox="0 0 160 54" preserveAspectRatio="none" aria-hidden="true"><path d="M1 2H70Q80 14 90 2H159V51H90Q80 39 70 51H1Z" fill="#fffef0" stroke="#000" stroke-width="2"/></svg><img src="img/svg/apple2.svg" alt="苹果" draggable="false"><span></span></span></div>`).join('');
+$('buildings').innerHTML=BUILDINGS.map((b,i)=>`<div class="building" data-building="${i}" role="group"><button class="recruit-hit" aria-label="招募${b.name}"></button><span class="tile"><span class="tag-motion">${FISH_TAGS[i]}<span class="gain"></span></span><span class="owned"></span></span><span class="cost"><svg class="price-outline" viewBox="0 0 160 54" preserveAspectRatio="none" aria-hidden="true"><path d="M1 2H70Q80 14 90 2H159V51H90Q80 39 70 51H1Z" fill="#fffef0" stroke="#000" stroke-width="2"/></svg><img src="img/svg/apple2.svg" alt="苹果" draggable="false"><span></span></span></div>`).join('');
 // Reference base Golden Cookie timing: 30 trials/sec, hazard ((t-300)/600)^5.
 // This demo restricts outcomes to Lucky and Frenzy; Frenzy duration is customized to 60s.
 function freshEvents(){return {elapsed:0,carry:0,active:null,lastKind:null,frenzy:0,frenzyDuration:60}}
@@ -333,7 +432,7 @@ function freshGuaranteedGold(){return [60,240].map(min=>({at:min+Math.random()*6
 function updateGuaranteedGold(dt){
  for(const gift of state.guaranteedGold){
   if(gift.active){gift.active.remaining=Math.max(0,gift.active.remaining-dt);if(gift.active.remaining<=1e-8)gift.active=null}
-  if(!gift.spawned&&state.playSeconds>=gift.at){
+  if(!gift.spawned&&state.operationSeconds>=gift.at){
    gift.spawned=true;
    const normal=state.events.active,x=normal&&normal.x<.5?.75:.18;
    gift.active={kind:'golden',x,y:.34+Math.random()*.08,remaining:13};
@@ -343,11 +442,13 @@ function updateGuaranteedGold(dt){
 }
 function chooseEventKind(){return Math.random()<10/14?'lucky':'golden'}
 function spawnSpecial(kind=chooseEventKind()){
+ if(state.phase!=='operation')return null;
  const e=state.events;let x,y;
  for(let i=0;i<30;i++){x=.10+Math.random()*.79;y=.24+Math.random()*.32;if(!(x<.30&&y>.38)&&!(x>.73&&y>.49)&&!(x>.66&&y<.36))break}
  e.active={kind,x,y,remaining:13};e.elapsed=0;e.carry=0;save();render();return e.active;
 }
 function updateEvents(dt){
+ if(state.phase!=='operation')return;
  updateGuaranteedGold(dt);
  const e=state.events;e.frenzy=Math.max(0,e.frenzy-dt);if(e.frenzy<1e-8)e.frenzy=0;
  if(e.active){e.active.remaining=Math.max(0,e.active.remaining-dt);if(e.active.remaining<1e-8){e.active=null;e.elapsed=0;e.carry=0}return}
@@ -399,7 +500,7 @@ function driveGoldenDance(dt){
 }
 function renderEvents(){
  const e=state.events,active=e.active,layer=$('specialLayer'),glow=$('specialGlow');
- glow.hidden=!active;if(active){glow.dataset.kind=active.kind;glow.style.left=active.x*100+'%';glow.style.top=active.y*100+'%';glow.style.opacity=String(Math.min(1,active.remaining/1.2))}
+ glow.hidden=!active||active.kind==='lucky';if(active){glow.dataset.kind=active.kind;glow.style.left=active.x*100+'%';glow.style.top=active.y*100+'%';glow.style.opacity=String(Math.min(1,active.remaining/1.2))}
  if(active){let button=$('specialApple');if(!button){button=document.createElement('button');button.id='specialApple';button.className='special-apple';button.innerHTML='<img draggable="false" alt="">';button.onclick=collectSpecial;layer.append(button)}
   button.dataset.kind=active.kind;button.style.left=active.x*100+'%';button.style.top=active.y*100+'%';button.style.opacity=String(Math.min(1,active.remaining/1.2));button.setAttribute('aria-label',(active.kind==='lucky'?'幸运苹果，领取即时奖励':`金苹果，开启${60}秒七倍点击与自动产量`));
   const src=active.kind==='golden'?'img/svg/apple-gold.svg?v=frenzy16':'img/svg/apple-lucky.svg';if(button.querySelector('img').getAttribute('src')!==src)button.querySelector('img').src=src;
@@ -560,16 +661,17 @@ function summonWorker(gain=0,building=null){
 // ticket; the number only starts climbing once the label lands there.
 let rateDeferred=0,rateRoll=0,rateRollSpeed=0,rateFlights=0;
 function flyRateGain(gain,depth,workerX=-10){
+ if(state.tutorial==='employee')setTutorialStep('rateFlying');
  const phone=document.querySelector('.phone'),rateEl=document.querySelector('.rate');
  if(!phone||!rateEl){rateDeferred=Math.max(0,rateDeferred-gain);return}
- const box=phone.getBoundingClientRect(),target=rateEl.getBoundingClientRect();
+ const box=phone.getBoundingClientRect(),target=restingRect(rateEl);
  const tag=document.createElement('div');
  tag.className='rate-gain';tag.setAttribute('aria-hidden','true');
  tag.innerHTML='<img src="img/svg/apple.svg" alt=""><span>+'+productionNumber(gain*(state.events.frenzy>0?7:1))+'/s</span>';
  phone.append(tag);rateFlights++;
  // Start on the fishman's own body, which by now is just off the left edge,
  // so the label drifts in from off-screen rather than popping at the border.
- const startX=box.width*(workerX+20)/100,startY=box.height*(.39+(depth+12)/100);
+ const startX=Math.max(box.width*.08,box.width*(workerX+20)/100),startY=box.height*(.39+(depth+12)/100);
  const endX=target.left-box.left+target.width*.5,endY=target.top-box.top+target.height*.5;
  tag.style.left=startX+'px';tag.style.top=startY+'px';
  // A quadratic curve with its control point under the ticket: the label drifts
@@ -586,7 +688,7 @@ function flyRateGain(gain,depth,workerX=-10){
  }
  const move=tag.animate(frames,{duration:1250,easing:'cubic-bezier(.33,0,.5,1)',fill:'forwards'});
  move.onfinish=()=>{
-  tag.remove();rateFlights--;
+  tag.remove();rateFlights--;if(state.tutorial==='rateFlying')setTutorialStep('rate');
   // Hand the amount to the ticket and let it roll up over a short beat.
   rateRoll+=gain;rateRollSpeed=rateRoll/.45;
   document.querySelector('.rate')?.classList.add('rate-bump');
@@ -640,20 +742,37 @@ function driveWorkers(dt){
  }
 }
 function addTestApples(){
+ if(state.phase!=='operation')return;
  const limit=1e75;
  if(state.apples>=limit){notify('已达到测试苹果上限');return}
  const target=Math.min(limit,Math.max(1e6,state.apples*10));
  earn(target-state.apples);displayed=state.apples;lastPaintedBalance=null;
  save();render();notify('测试苹果已增加');
 }
-$('testApples').onclick=addTestApples;
-function alignTestReset(){
- const top=$('testLucky').getBoundingClientRect().top;
- if(top>0)document.querySelector('.debug-reset').style.top=top+'px';
+function fastForwardBuild(){
+ if(state.phase==='operation')return;
+ clearConstructionFlights();clearTutorialFlights();state.buildClicks=BUILD_CLICKS_REQUIRED;state.phase='ready';startOperation();
 }
-window.addEventListener('resize',alignTestReset);
-new ResizeObserver(alignTestReset).observe(document.querySelector('.debug-events'));
-requestAnimationFrame(alignTestReset);
+function fastForwardFive(){
+ fastForwardBuild();
+ if(employeeCount()>=5)return;
+ clearTutorialFlights();resetPurchaseSpeech();
+ state.owned[0]+=Math.max(0,5-employeeCount());state.introRecruit=true;
+ if(state.milestoneTimes.fiveEmployees===null)state.milestoneTimes.fiveEmployees=state.playSeconds;
+ state.tutorial='waitRecruit';state.tutorialTime=0;bulk=1;save();render();
+}
+function fastForwardFirstUpgrade(){
+ fastForwardFive();
+ if(state.firstUpgradeAcknowledged)return;
+ resetPurchaseSpeech();clearTutorialFlights();state.recruitGoalChoice='continue';state.recruitGoalGuide='done';state.tutorial='done';
+ document.querySelectorAll('dialog[open]').forEach(d=>d.close());
+ for(const u of initialFarmItems){if(state.upgrades.includes(u.id))continue;const shortage=Math.max(0,u.price-state.apples);if(shortage)earn(shortage);buyUpgrade(u.id)}
+ save();render();showFarmLevelComplete();
+}
+$('testBuildComplete').onclick=fastForwardBuild;
+$('testFiveEmployees').onclick=fastForwardFive;
+$('testFirstFarmUpgrade').onclick=fastForwardFirstUpgrade;
+$('testApples').onclick=addTestApples;
 $('testLucky').onclick=()=>spawnSpecial('lucky');$('testGolden').onclick=()=>spawnSpecial('golden');
 // DEMO: one row per fishman, ×1 and ×10. These only play the arrival
 // animation and the greeting - no apples are spent and no production changes.
@@ -661,7 +780,7 @@ $('spawnGrid').replaceChildren(...BUILDINGS.flatMap((b,i)=>[1,10].map(count=>{
  const button=document.createElement('button');
  button.textContent=count===1?b.name:'×10';
  button.setAttribute('aria-label',`${b.name} 进场 ${count} 个`);
- button.onclick=()=>{greetPurchase();queueWorkers(count,0,i)};
+ button.onclick=()=>{if(state.phase!=='operation')return;greetPurchase();queueWorkers(count,0,i)};
  return button;
 })));
 prepareWorkerFrame();
@@ -682,21 +801,16 @@ function drawRateTicket(){
  fills[1].setAttribute('d',`M0 0H${split}V${h}H0Z`);
 }
 new ResizeObserver(drawRateTicket).observe(document.querySelector('.rate'));
-function setText(el,value){if(el.textContent!==value)el.textContent=value}
-const clockText=total=>{const whole=Math.floor(Math.max(0,total));
- return [Math.floor(whole/3600),Math.floor(whole/60)%60,whole%60].map(n=>String(n).padStart(2,'0')).join(':')};
-// Each factory level keeps the time it was reached, so a run can be compared
-// with the last one without watching the clock.
-function renderLevelTimes(){
- const list=$('levelTimes'),levels=Object.keys(state.levelTimes).map(Number).sort((a,b)=>a-b);
- list.hidden=!levels.length;
- const rows=levels.map(level=>`<span><i>Lv.${level}</i><b>${clockText(state.levelTimes[level])}</b></span>`).join('');
- if(list.innerHTML!==rows)list.innerHTML=rows;
-}
+function setText(el,value){value=t(value);if(el.textContent!==value)el.textContent=value}
+function formatMilestoneTime(seconds){if(seconds===null)return '—';const n=Math.floor(seconds);return [Math.floor(n/3600),Math.floor(n/60)%60,n%60].map(v=>String(v).padStart(2,'0')).join(':')}
 function render(){
+ renderConstruction();renderTutorial();
  const played=Math.floor(state.playSeconds),hours=Math.floor(played/3600),minutes=Math.floor(played/60)%60,seconds=played%60;
  setText($('playTime'),[hours,minutes,seconds].map(n=>String(n).padStart(2,'0')).join(':'));
- renderLevelTimes();
+ $('milestoneTimes').hidden=state.milestoneTimes.construction===null&&state.milestoneTimes.fiveEmployees===null&&state.milestoneTimes.firstFarmUpgrade===null;
+ $('constructionTimeRow').hidden=state.milestoneTimes.construction===null;$('fiveEmployeesTimeRow').hidden=state.milestoneTimes.fiveEmployees===null;
+ $('firstFarmUpgradeTimeRow').hidden=state.milestoneTimes.firstFarmUpgrade===null;setText($('firstFarmUpgradeTime'),formatMilestoneTime(state.milestoneTimes.firstFarmUpgrade));
+ setText($('constructionTime'),formatMilestoneTime(state.milestoneTimes.construction));setText($('fiveEmployeesTime'),formatMilestoneTime(state.milestoneTimes.fiveEmployees));
  if(typeof renderCatalog==="function")renderCatalog();
  renderEvents();
  paintBalance();$('rate').textContent='+'+precise(shownRate()*(state.events.frenzy>0?7:1))+'/s';$('rateMultiplier').hidden=true;$('clickValue').textContent='每次 +'+number(clickPower());document.querySelector('.phone').classList.toggle('running',cps()>0);
@@ -707,9 +821,6 @@ function render(){
   consecutiveLocked=show?0:consecutiveLocked+1;el.hidden=consecutiveLocked>2;
   if(el.disabled!==disabled)el.disabled=disabled;
   const recruit=el.querySelector('.recruit-hit');recruit.disabled=disabled;
-  const next=fishUpgrade(i),arrow=el.querySelector('.fish-upgrade');arrow.hidden=!show;arrow.querySelector('svg').toggleAttribute('hidden',!next);setText(arrow.querySelector('.fish-level'),'Lv.'+fishLevel(i));
-  arrow.classList.toggle('can-upgrade',!!next&&state.apples+1e-9>=next.price);
-  arrow.setAttribute('aria-label',next?`升级${b.name}：${next.name}，${number(next.price)}苹果`:`${b.name}暂无升级`);
   el.classList.toggle('affordable',show&&!poor);el.classList.toggle('locked',!show);
   // An empty corner reads as "none yet"; a zero would look like a real count.
   setText(el.querySelector('.owned'),show&&state.owned[i]>0?number(state.owned[i]):'');
@@ -720,7 +831,6 @@ function render(){
   const label=show?`招募 ${bulk} 个${b.name}，${price} 苹果${poor?'，苹果不够':''}`:'未解锁的鱼人';
   if(el.getAttribute('aria-label')!==label)el.setAttribute('aria-label',label);
  });
- if($('fishUpgradeDialog').open)renderFishUpgrade();
  renderFactoryUpgrade();
  const hasItems=offers().length>0;$('vendingDot').hidden=!hasItems;$('openShop').setAttribute('aria-label','外出，暂未开放');
  if($('shopDialog').open)renderVending();
@@ -1050,64 +1160,46 @@ const ITEM_ICONS={
 };
 const itemIcon=id=>ITEM_ICONS[id]||'img/items/item-placeholder.svg';
 let selectedItem=null,vendingSignature='';
-// What has to happen before an item shows up in the vending machine. The
-// fields are the ones `unlocked()` tests, so the two cannot drift apart.
-function itemUnlock(u){
- if(u.kind==='global')return `累计生产 ${number(Math.ceil(u.earned))} 苹果`;
- if(u.kind==='mouse')return `手动点击累计生产 ${number(Math.ceil(u.handmade))} 苹果`;
- const base=`拥有 ${number(u.need)} 名${BUILDINGS[u.building].name}`;
- return u.kind==='mentor'?`${base}，且至少 1 名${BUILDINGS[1].name}`:base;
-}
 function itemDescription(u){
- if(u.kind==='global'||u.kind==='fish-global')return `所有鱼人产能 +${u.power}%，与其他补给乘算叠加。`;
- if(u.kind==='mentor')return `${BUILDINGS[1].name}产能 ×2；每 ${u.building-1} 名${BUILDINGS[1].name}让${BUILDINGS[u.building].name}产能 +1%。`;
- const approx=n=>number(Math.round(n));
- if(u.kind==='double'){
-  if(u.building===0)return '每次手动点击的基础收益 ×2；兼职鱼人的基础产量 ×2。';
-  const production=`${BUILDINGS[u.building].name}产量 ×2`;
-  return production+(u.globalBonus?`\n全体产量 +${u.globalBonus}%`:'')+(u.clickPercent?`\n点击收益 +秒产的 1%（约 ${approx(cps()*.01)} 苹果/次）`:'');
- }
- const others=state.owned.slice(1).reduce((a,b)=>a+b,0),before=upgradeEffects().fingers;
- const after=u.synergyIndex===0?.1:before*u.factor;
- const frenzy=state.events.frenzy>0?7:1;
- return `每名其他鱼人提供的协作加成：${precise(before)} → ${precise(after)}。\n按当前 ${number(others)} 名其他鱼人计算：\n每次手动点击的协作收益：约 ${approx(before*others*frenzy)} → ${approx(after*others*frenzy)} 个苹果。\n每名兼职鱼人的协作秒产：约 ${approx(before*others*upgradeEffects().global*frenzy)} → ${approx(after*others*upgradeEffects().global*frenzy)} 个苹果/秒。`;
+ if(u.kind==='global')return `全体产量 +${u.power}%`;
+ if(u.kind==='mentor')return `农民鱼人产量 ×2；每 ${u.building-1} 名农民鱼人使${BUILDINGS[u.building].name}产量 +1%`;
+ if(u.kind==='double')return u.building===0?'点击基础收益 ×2；兼职鱼人基础产量 ×2':`${BUILDINGS[u.building].name}产量 ×2`;
+ if(u.kind==='mouse')return `点击收益 +秒产的 1%（约 ${number(Math.round(cps()*.01))} 个苹果/次）`;
+ const before=upgradeEffects().fingers,after=u.id==='fingers-0'?.1:before*u.factor;
+ return `每名其他鱼人提供的协作加成：${precise(before)} → ${precise(after)}`;
 }
-function renderFishUpgradeEffect(u){
- const target=$('fishUpgradeEffect');
- if(u.kind==='double'&&u.building>0){
-  const amount=number(Math.round(cps()*.01)),before=precise(currentUnitCps(u.building)),after=precise(currentUnitCps(u.building)*2*(1+(u.globalBonus||0)/100));
-  const signature=`double-${u.id}-${amount}-${before}-${after}`;
-  if(target.dataset.effectSignature===signature)return;
-  target.dataset.effectSignature=signature;
-  const make=(className,text)=>{const node=document.createElement('span');node.className=className;node.textContent=text;return node};
-  const main=make('upgrade-key-effect',`${BUILDINGS[u.building].name}产量 ×2`);
-  if(u.clickPercent)main.append(make('upgrade-click-effect','点击收益 +秒产的 1%'));
-  if(u.globalBonus)main.append(make('upgrade-click-effect',`全体产量 +${u.globalBonus}%`));
-  const preview=make('upgrade-estimate','');
-  preview.append(make('upgrade-estimate-title','预计收益'));
-  const production=make('upgrade-estimate-row','');
-  production.append(make('upgrade-estimate-label',`每名${BUILDINGS[u.building].name}的秒产`),make('upgrade-estimate-values',`${before} → ${after}`),make('upgrade-estimate-unit','个苹果/秒'));
-  preview.append(production);
-  if(u.clickPercent){
-   const click=make('upgrade-estimate-row','');
-   click.append(make('upgrade-estimate-label','每次点击额外获得'),make('upgrade-estimate-values',`约 ${amount} 个苹果`));preview.append(click);
-  }
-  target.replaceChildren(main,preview);return;
- }
- if(u.kind!=='fingers'){delete target.dataset.effectSignature;setText(target,itemDescription(u));return}
- const others=state.owned.slice(1).reduce((sum,n)=>sum+n,0),before=upgradeEffects().fingers;
- const after=u.synergyIndex===0?.1:before*u.factor,frenzy=state.events.frenzy>0?7:1;
+function renderUpgradeEffect(u,target){
  const make=(className,text)=>{const node=document.createElement('span');node.className=className;node.textContent=text;return node};
- const main=make('upgrade-key-effect','每名其他鱼人提供的协作加成');
- main.append(make('upgrade-key-values',`${precise(before)} → ${precise(after)}`));
- const preview=make('upgrade-estimate','');
- preview.append(make('upgrade-estimate-title','预计收益'),make('upgrade-estimate-note',`按当前 ${number(others)} 名其他鱼人计算`));
- for(const [label,scale,unit] of [['每次手动点击',frenzy,'个苹果/次'],['每名兼职鱼人',upgradeEffects().global*frenzy,'个苹果/秒']]){
-  const row=make('upgrade-estimate-row','');
-  row.append(make('upgrade-estimate-label',label),make('upgrade-estimate-values',`${number(Math.round(before*others*scale))} → ${number(Math.round(after*others*scale))}`),make('upgrade-estimate-unit',unit));
-  preview.append(row);
+ const main=make('upgrade-key-effect',''),preview=make('upgrade-estimate','');
+ preview.append(make('upgrade-estimate-title','预计收益'));
+ const row=(label,before,after,unit,rounded=false)=>{
+  const item=make('upgrade-estimate-row',''),format=n=>rounded?number(Math.round(n)):precise(n);
+  item.append(make('upgrade-estimate-label',label),make('upgrade-estimate-values',`${format(before)} → ${format(after)}`),make('upgrade-estimate-unit',unit));preview.append(item);
+ };
+ const frenzy=state.events.frenzy>0?7:1,global=upgradeEffects().global;
+ if(u.kind==='global'){
+  main.textContent=`全体产量 +${u.power}%`;row('全体鱼人总秒产',cps(),cps()*(1+u.power/100),'个苹果/秒');
+ }else if(u.kind==='double'&&u.building>0){
+  main.textContent=`${BUILDINGS[u.building].name}产量 ×2`;row(`每名${BUILDINGS[u.building].name}的秒产`,currentUnitCps(u.building),currentUnitCps(u.building)*2,'个苹果/秒');
+ }else if(u.kind==='double'){
+  main.textContent='点击基础收益 ×2';main.append(make('upgrade-click-effect','兼职鱼人基础产量 ×2'));
+  row('每次点击的基础收益',multiplier(0)*frenzy,multiplier(0)*2*frenzy,'个苹果/次');
+  row('每名兼职鱼人的秒产',currentUnitCps(0),(BUILDINGS[0].cps*multiplier(0)*2+fingerBonus())*global*frenzy,'个苹果/秒');
+ }else if(u.kind==='mouse'){
+  main.textContent='点击收益 +秒产的 1%';preview.append(make('upgrade-estimate-note','按当前每秒产量计算'));
+  const amount=make('upgrade-estimate-row','');amount.append(make('upgrade-estimate-label','每次点击额外获得'),make('upgrade-estimate-values',`约 ${number(Math.round(cps()*.01))} 个苹果`));preview.append(amount);
+ }else if(u.kind==='mentor'){
+  main.textContent='农民鱼人产量 ×2';main.append(make('upgrade-click-effect',`每 ${u.building-1} 名农民鱼人，使${BUILDINGS[u.building].name}产量 +1%`));
+  row('每名农民鱼人的秒产',currentUnitCps(1),currentUnitCps(1)*2,'个苹果/秒');
+  row(`每名${BUILDINGS[u.building].name}的秒产`,currentUnitCps(u.building),currentUnitCps(u.building)*(1+state.owned[1]*.01/(u.building-1)),'个苹果/秒');
+ }else{
+  const others=state.owned.slice(1).reduce((sum,n)=>sum+n,0),before=upgradeEffects().fingers,after=u.id==='fingers-0'?.1:before*u.factor;
+  main.textContent='每名其他鱼人提供的协作加成';main.append(make('upgrade-key-values',`${precise(before)} → ${precise(after)}`));
+  preview.append(make('upgrade-estimate-note',`按当前 ${number(others)} 名其他鱼人计算`));
+  row('每次手动点击',before*others*frenzy,after*others*frenzy,'个苹果/次',true);
+  row('每名兼职鱼人',before*others*global*frenzy,after*others*global*frenzy,'个苹果/秒',true);
  }
- const signature=main.textContent+preview.textContent;
+ const signature=u.id+main.textContent+preview.textContent;
  if(target.dataset.effectSignature===signature)return;
  target.dataset.effectSignature=signature;target.replaceChildren(main,preview);
 }
@@ -1157,7 +1249,7 @@ $('produce').addEventListener('click',produce);$('openShop').onclick=()=>notify(
 $('shopDialog').addEventListener('cancel',()=>returnFocus?.focus());
 $('shopDialog').addEventListener('close',()=>{$('shopShade').hidden=true;document.querySelector('.phone').classList.remove('shop-open')});
 $('buildings').addEventListener('scroll',()=>{document.querySelector('.building-shop').style.backgroundPositionX=`${-$('buildings').scrollLeft}px`},{passive:true});
-$('buildings').addEventListener('click',e=>{const arrow=e.target.closest('[data-fish-upgrade]');if(arrow){openFishUpgrade(+arrow.dataset.fishUpgrade);return}const el=e.target.closest('[data-building]');if(!el||el.disabled)return;
+$('buildings').addEventListener('click',e=>{const el=e.target.closest('[data-building]');if(!el||el.disabled)return;
  const i=+el.dataset.building;
  if(!buyBuilding(i))notify('苹果不够');
 });
@@ -1171,90 +1263,113 @@ function sizeUpgradeDialogs(){
  document.documentElement.style.setProperty('--upgrade-game-width',box.width+'px');
 }
 window.addEventListener('resize',sizeUpgradeDialogs);
-function openFishUpgrade(i){
- sizeUpgradeDialogs();upgradeFish=i;renderFishUpgrade();$('fishUpgradeDialog').showModal();
+const FARM_GOAL_LINES={};
+function employeeCount(){return state.owned.reduce((sum,n)=>sum+n,0)}
+const FARM_UPGRADE_LINES={growth:'农场发展壮大了！',facilities:'想继续强化农场，可以点击右上角，完善农场设施。'};
+function showFarmLevelComplete(){
+ if(state.phase!=='operation'||initialFarmCount()<3||state.firstUpgradeAcknowledged||$('farmLevelCompleteDialog').open)return;
+ if($('factoryUpgradeDialog').open)$('factoryUpgradeDialog').close();
+ if($('shopDialog').open)$('shopDialog').close();
+ $('farmLevelCompleteDialog').showModal();
 }
-function renderFishUpgrade(){
- if(upgradeFish===null)return;
- const u=fishUpgrade(upgradeFish),dialog=$('fishUpgradeDialog');
- setText($('fishUpgradeTitle'),'升级'+BUILDINGS[upgradeFish].name);
- setText($('fishUpgradeLevel'),`Lv.${fishLevel(upgradeFish)}${u?' → Lv.'+(fishLevel(upgradeFish)+1):''}`);
- $('fishUpgradeBody').hidden=!u;$('fishUpgradeEmpty').hidden=!!u;
- if(!u)return;
- dialog.dataset.upgrade=u.id;
- setText($('fishUpgradeName'),u.name);renderFishUpgradeEffect(u);
- setText($('fishUpgradePrice'),number(u.price));
- const can=state.apples+1e-9>=u.price;$('confirmFishUpgrade').disabled=!can;
- setText($('confirmFishUpgrade'),can?'升级':'苹果不足');
+$('farmLevelCompleteDialog').addEventListener('cancel',e=>e.preventDefault());
+$('confirmFarmLevelComplete').onclick=()=>{
+ state.firstUpgradeAcknowledged=true;state.farmUpgradeGuide='growth';state.farmUpgradeGuideTime=0;
+ $('farmLevelCompleteDialog').close();save();render();showFarmRebuildDust();speakTutorial(FARM_UPGRADE_LINES.growth);
+};
+function updateFarmGoalGuide(dt){
+ showFarmLevelComplete();
+ if(state.phase!=='operation'||state.farmUpgradeGuide==='done')return;
+ state.farmUpgradeGuideTime+=dt;
+ if(state.farmUpgradeGuideTime>=4){
+  state.farmUpgradeGuide=state.farmUpgradeGuide==='growth'?'facilities':'done';state.farmUpgradeGuideTime=0;
+  if(FARM_UPGRADE_LINES[state.farmUpgradeGuide])speakTutorial(FARM_UPGRADE_LINES[state.farmUpgradeGuide]);else resetPurchaseSpeech();save();
+ }
 }
+function renderNewFarmDialog(){
+ if(!$('newFarmDialog').open)return;
+ const current=baseCps();
+ const format=n=>n>=1000?productionNumber(n):Number(n.toPrecision(6)).toString();
+ $('farmCurrentCps').textContent=format(current)+' /s';
+ $('farmInheritedCps').textContent=format(current*.1)+' /s';
+}
+function openNewFarmDialog(){
+ if(employeeCount()<5)return;
+ if($('factoryUpgradeDialog').open)$('factoryUpgradeDialog').close();
+ $('goalUnavailable').hidden=true;
+ if(!$('newFarmDialog').open)$('newFarmDialog').showModal();
+ renderNewFarmDialog();
+}
+$('closeNewFarm').onclick=()=> $('newFarmDialog').close();
+$('confirmNewFarm').onclick=()=>{$('goalUnavailable').hidden=false};
+function renderRecruitGoal(){
+ const continuing=state.recruitGoalChoice==='continue',count=Math.min(5,employeeCount());
+ $('recruitGoal').hidden=continuing;$('farmUpgradeControls').hidden=!continuing;
+ $('recruitGoalActions').hidden=count<5;
+ $('recruitGoalFill').style.width=count/5*100+'%';setText($('recruitGoalLabel'),`${count}/5`);
+ $('recruitGoalTrack').setAttribute('aria-valuenow',String(count));
+}
+$('goalNewFarm').onclick=openNewFarmDialog;
+$('goalContinue').onclick=()=>{
+ if(employeeCount()<5)return;
+ $('newFarmDialog').close();
+ if(state.recruitGoalChoice==='continue')return;
+ const session=state,goal=$('recruitGoal'),clone=goal.cloneNode(true),hud=goal.parentNode;
+ state.recruitGoalChoice='continue';$('goalUnavailable').hidden=true;save();render();
+ if(!matchMedia('(prefers-reduced-motion: reduce)').matches){
+  clone.removeAttribute('id');clone.querySelectorAll('[id]').forEach(el=>el.removeAttribute('id'));clone.setAttribute('aria-hidden','true');clone.inert=true;clone.style.cssText='position:absolute;inset:0 auto auto 0;width:100%;pointer-events:none';hud.append(clone);
+  const exit=clone.animate([{transform:'translateX(0)',opacity:1},{transform:'translateX(115%)',opacity:0}],{duration:260,easing:'ease-in',fill:'forwards'});exit.finished.then(()=>clone.remove(),()=>clone.remove());
+  $('farmUpgradeControls').animate([{transform:'translateX(115%)',opacity:0},{transform:'translateX(0)',opacity:1}],{delay:260,duration:420,fill:'backwards',easing:'cubic-bezier(.2,.8,.3,1)'});
+ }
+ if(state===session){state.recruitGoalGuide='done';setTutorialStep('closing')}
+};
 function renderFactoryUpgrade(){
- const progress=factoryProgress(),next=nextFactoryItem(),percent=progress.done/progress.total*100;
- $('factoryCanUpgradeArrow').toggleAttribute('hidden',!next||!unlocked(next)||state.apples+1e-9<next.price);
- setText($('factoryLevel'),'Lv.'+progress.level);setText($('factoryEntryName'),progress.enhancing?'工厂强化':'工厂升级');setText($('factoryProgressLabel'),`${progress.done}/${progress.total}`);
- const quick=$('quickFactoryUpgrade');quick.disabled=!next||!unlocked(next)||state.apples+1e-9<next.price;
- setText($('quickFactoryPrice'),next?number(next.price):'已完成');
- quick.querySelector('img').hidden=!next;
- quick.setAttribute('aria-label',next?`直接${progress.enhancing?'强化':'升级'}工厂，${number(next.price)}苹果`:'工厂已完成全部强化');
- $('factoryProgressFill').style.width=percent+'%';$('factoryEntry').setAttribute('aria-label',`${progress.enhancing?'工厂强化':'工厂升级'}，等级${progress.level}，进度${progress.done}/${progress.total}`);
+ renderRecruitGoal();renderNewFarmDialog();
+ const initial=!state.firstUpgradeAcknowledged,stageCount=initialFarmCount(),enhancementLevel=Math.max(1,state.upgrades.length-3+1);
+ const progress=factoryProgress(),next=state.phase==='operation'?nextFactoryItem():null,percent=progress.done/progress.total*100;
+ $('factoryCanUpgradeArrow').toggleAttribute('hidden',!next||state.apples+1e-9<next.price);
+ setText($('factoryEntryName'),initial?'升级农场':'强化农场');
+ $('initialFarmTrack').hidden=!initial;$('factoryProgressLabel').hidden=initial;
+ $('initialFarmFill').style.width=stageCount/3*100+'%';setText($('initialFarmLabel'),`${stageCount}/3`);
+ setText($('factoryProgressLabel'),`lv.${enhancementLevel}`);
+ const quick=$('quickFactoryUpgrade');quick.disabled=!next||state.apples+1e-9<next.price;
+ setText($('quickFactoryPrice'),next?number(next.price):'已完成');quick.querySelector('img').hidden=!next;
+ quick.setAttribute('aria-label',next?`${initial?'升级农场':'强化农场'}，${number(next.price)}苹果`:'全部升级已完成');
  if(!$('factoryUpgradeDialog').open)return;
- $('openNewFactory').hidden=progress.level<4;
- if(progress.level<4)$('newFactoryNotice').hidden=true;
- setText($('factoryStageTitle'),progress.enhancing?'工厂强化 · Lv.4':`苹果工厂 · Lv.${progress.level} → Lv.${progress.level+1}`);
- setText($('factoryStageCount'),progress.enhancing?'工厂等级已完成升级，继续提升全体产量':`阶段 ${progress.stage+1}/3 · 小升级 ${progress.done}/${progress.total}`);
- $('factoryStageFill').style.width=percent+'%';setText($('factoryStageProgress'),`${progress.done}/${progress.total}`);
+ $('openNewFactory').hidden=false;
+ setText($('factoryStageTitle'),initial?'升级农场':'强化农场');
+ const captions=$('factoryUpgradeDialog').querySelectorAll('.upgrade-caption');setText(captions[0],initial?'本次升级效果':'本次强化效果');setText(captions[1],initial?'升级价格':'强化价格');
+ setText($('factoryStageProgress'),initial?`${stageCount}/3`:`lv.${enhancementLevel}`);
  $('factoryNext').hidden=!next;$('factoryComplete').hidden=!!next;
- $('factoryCoinReward').hidden=!next;
  if(!next)return;
- setText($('factoryNextName'),next.name);setText($('factoryNextEffect'),next.kind==='factory-recruit'?`${BUILDINGS[next.building].name} +${next.count}`:`全体产量 +${next.power}%`);setText($('factoryNextPrice'),number(next.price));
- const unlockedNow=unlocked(next),can=unlockedNow&&state.apples+1e-9>=next.price;
- $('confirmFactoryUpgrade').disabled=!can;setText($('confirmFactoryUpgrade'),can?(progress.enhancing?'强化进度 +1':'升级进度 +1'):unlockedNow?'苹果不足':'尚未解锁');
- setText($('factoryNextHint'),unlockedNow?'完成本阶段全部小升级，工厂等级提升一级。':itemUnlock(next));
+ setText($('factoryNextName'),next.name);renderUpgradeEffect(next,$('factoryNextEffect'));setText($('factoryNextPrice'),number(next.price));
+ const can=state.apples+1e-9>=next.price;
+ $('confirmFactoryUpgrade').disabled=!can;setText($('confirmFactoryUpgrade'),can?(initial?'升级':'强化'):'苹果不足');
+ setText($('factoryNextHint'),'');
 }
-$('factoryEntry').onclick=()=>{sizeUpgradeDialogs();$('factoryMilestone').hidden=true;$('newFactoryNotice').hidden=true;$('factoryUpgradeDialog').showModal();renderFactoryUpgrade()};
-$('openNewFactory').onclick=()=>{$('newFactoryNotice').hidden=false};
+$('factoryEntry').onclick=()=>{if(state.phase!=='operation')return;sizeUpgradeDialogs();$('newFactoryNotice').hidden=true;$('factoryUpgradeDialog').showModal();renderFactoryUpgrade()};
+$('openNewFactory').onclick=openNewFarmDialog;
 $('closeFactoryUpgrade').onclick=()=> $('factoryUpgradeDialog').close();
-let factoryRewardBatch=null,factoryRewardTimer,factoryRewardAnimation;
-function clearFactoryReward(){
- clearTimeout(factoryRewardTimer);factoryRewardAnimation?.cancel();factoryRewardBatch=null;$('quickFactoryReward').hidden=true;
-}
-function showFactoryReward(item,gain,clickBefore=null,clickAfter=null){
- const box=$('quickFactoryReward'),reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
- clearTimeout(factoryRewardTimer);factoryRewardAnimation?.cancel();
- if(!factoryRewardBatch||box.hidden)factoryRewardBatch={fish:new Map(),gain:0,count:0,global:1,clickBefore:null,clickAfter:null};
- const batch=factoryRewardBatch;batch.count++;batch.gain+=gain;
- if(clickBefore!==null){batch.clickBefore??=clickBefore;batch.clickAfter=clickAfter}
- $('quickFactoryClick').hidden=batch.clickBefore===null;
- if(batch.clickBefore!==null)setText($('quickFactoryClick'),`点击基础收益 ${batch.clickBefore} → ${batch.clickAfter}`);
- if(item.kind==='factory-recruit')batch.fish.set(item.building,(batch.fish.get(item.building)||0)+item.count);
- else batch.global*=1+item.power/100;
- let label;
- if(batch.fish.size===1){const [i,count]=batch.fish.entries().next().value;label=`${BUILDINGS[i].name} +${count}`}
- else if(batch.fish.size>1)label=`鱼人 +${[...batch.fish.values()].reduce((a,b)=>a+b,0)}`;
- else label=`全体产量 +${precise((batch.global-1)*100)}%`;
- setText($('quickFactoryGain'),`${label}（+${productionNumber(batch.gain)}/s）`);
- setText($('quickFactoryCoin'),`服装扭蛋硬币 +${batch.count}`);
- box.hidden=false;
- factoryRewardAnimation=box.animate([{opacity:0,transform:'translateY(8px)'},{opacity:1,transform:'translateY(0)'}],{duration:reduce?0:220,easing:'ease-out'});
- factoryRewardTimer=setTimeout(()=>{
-  factoryRewardAnimation=box.animate([{opacity:1,transform:'translateY(0)'},{opacity:0,transform:'translateY(-5px)'}],{duration:reduce?0:240,easing:'ease-in',fill:'forwards'});
-  factoryRewardAnimation.onfinish=()=>{box.hidden=true;factoryRewardBatch=null};
- },2000);
-}
+let factoryRewardTimer,factoryRewardAnimation,factoryRewardBatch=null;
+function clearFactoryReward(){clearTimeout(factoryRewardTimer);factoryRewardAnimation?.cancel();factoryRewardBatch=null;$('quickFactoryReward').hidden=true}
 function performFactoryUpgrade(showReward=false){
- $('factoryMilestone').hidden=true;
- const next=nextFactoryItem(),before=factoryProgress().level,beforeCps=cps();
+ const next=nextFactoryItem(),before=cps(),beforeClick=clickPower();
  if(!next||!buyUpgrade(next.id))return false;
- const after=factoryProgress().level;
- if(showReward)showFactoryReward(next,Math.max(0,cps()-beforeCps),after>before?2**(before-1):null,after>before?2**(after-1):null);
- if(after>before){setText($('factoryMilestone'),`工厂升至 Lv.${after}\n点击基础收益 ${2**(before-1)} → ${2**(after-1)}`);$('factoryMilestone').hidden=false;$('factoryEntry').animate([{transform:'scale(1)'},{transform:'scale(1.1)'},{transform:'scale(1)'}],{duration:500});notify('工厂大升级！Lv.'+after)}
+ if(initialFarmCount()===3&&!state.firstUpgradeAcknowledged){clearFactoryReward();return true}
+ if(showReward){
+  const box=$('quickFactoryReward');clearTimeout(factoryRewardTimer);factoryRewardAnimation?.cancel();
+  if(!factoryRewardBatch||box.hidden)factoryRewardBatch={count:0,cps:0,click:0};
+  const batch=factoryRewardBatch;batch.count++;batch.cps+=Math.max(0,cps()-before);batch.click+=Math.max(0,clickPower()-beforeClick);
+  setText($('quickFactoryGain'),batch.count===1?(state.firstUpgradeAcknowledged?'强化完成':'设施已完善'):`${t('已完成')} ${batch.count} ${t(state.firstUpgradeAcknowledged?'次强化':'次升级')}`);
+  setText($('quickFactoryDelta'),batch.cps>0?`秒产 +${productionNumber(batch.cps)}/s`:`点击收益 +${productionNumber(batch.click)}`);
+  box.hidden=false;const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  factoryRewardAnimation=box.animate([{opacity:0,transform:'translateY(8px)'},{opacity:1,transform:'translateY(0)'}],{duration:reduced?0:220,easing:'ease-out'});
+  factoryRewardTimer=setTimeout(()=>{factoryRewardAnimation=box.animate([{opacity:1},{opacity:0}],{duration:reduced?0:240,fill:'forwards'});factoryRewardAnimation.onfinish=()=>{box.hidden=true;factoryRewardBatch=null}},2000);
+ }
  renderFactoryUpgrade();return true;
 }
 $('quickFactoryUpgrade').onclick=()=>performFactoryUpgrade(true);
 $('confirmFactoryUpgrade').onclick=()=>performFactoryUpgrade(false);
-$('closeFishUpgrade').onclick=()=> $('fishUpgradeDialog').close();
-$('fishUpgradeDialog').addEventListener('close',()=>{upgradeFish=null});
-$('fishUpgradeDialog').addEventListener('click',e=>{if(e.target===e.currentTarget){const r=e.currentTarget.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)e.currentTarget.close()}});
-$('confirmFishUpgrade').onclick=()=>{const u=fishUpgrade(upgradeFish);if(u)buyUpgrade(u.id);renderFishUpgrade()};
 $('upgrades').addEventListener('click',e=>{const icon=e.target.closest('[data-inspect]');if(icon){selectedItem=selectedItem===icon.dataset.inspect?null:icon.dataset.inspect;renderVending();return}const b=e.target.closest('[data-upgrade]');if(b&&!b.disabled)buyUpgrade(b.dataset.upgrade)});
 $('buyItem').onclick=()=>{if(selectedItem)buyUpgrade(selectedItem)};
 let wardrobeOpen=false,wardrobeMode='single',wardrobeSelected=null,wardrobeGridCategory=null,wardrobeInitTimer;
@@ -1311,6 +1426,7 @@ document.querySelectorAll('[data-wardrobe-mode]').forEach(button=>button.onclick
 });
 renderWardrobe();initializeCharacterWardrobe();
 function showWardrobe(open){
+ if(open&&state.phase!=='operation')return;
  wardrobeOpen=open;document.querySelector('.phone').classList.toggle('wardrobe-open',open);
  $('wardrobeView').hidden=!open;$('wardrobeView').setAttribute('aria-hidden',String(!open));
  const fish=document.querySelector('.fish-character')?.contentWindow;if(fish?.document?.body)fish.document.body.classList.toggle('wardrobe-preview',open);
@@ -1324,19 +1440,133 @@ $('wardrobeOutdoor').onclick=()=>notify('未开放');
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&wardrobeOpen&&!document.querySelector('dialog[open]'))showWardrobe(false)});
 document.querySelectorAll('[data-bulk]').forEach(b=>b.onclick=()=>{bulk=+b.dataset.bulk;render()});document.querySelectorAll('.placeholder').forEach(b=>b.onclick=()=>notify('这个功能稍后开放'));
 
-$('restart').onclick=()=>{if(!confirm('确定重新开始？当前苹果、鱼人和升级进度将被清空。'))return;state=fresh();clearFactoryReward();initializeCharacterWardrobe();displayed=0;bulk=1;workerQueue=[];rateDeferred=0;rateRoll=0;rateFlights=0;resetPurchaseSpeech();save();$('fx').replaceChildren();selectedItem=null;render();notify('新工厂已开工')};
-function recordLevelTimes(){
- const level=factoryProgress().level;
- for(let reached=2;reached<=level;reached++)
-  if(state.levelTimes[reached]===undefined)state.levelTimes[reached]=state.playSeconds;
+$('restart').onclick=()=>{if(!confirm(t('确定重新开始？当前苹果、鱼人和升级进度将被清空。')))return;clearConstructionFlights();clearTutorialFlights();state=fresh();if(wardrobeOpen)showWardrobe(false);document.querySelectorAll('dialog[open]').forEach(d=>d.close());clearFactoryReward();initializeCharacterWardrobe();displayed=0;bulk=1;workerQueue=[];rateDeferred=0;rateRoll=0;rateFlights=0;resetPurchaseSpeech();resetConstructionGuide();save();$('fx').replaceChildren();$('frenzyGlowLayer').replaceChildren();selectedItem=null;render();notify('新农场已开工')};
+// Reuse each exported Figma asset for both the scene and its stage bubble.
+function constructionImages(part){
+ return part.images.map(img=>`<image href="${img.src}" x="${img.mirror?0:img.x}" y="${img.mirror?0:img.y}" width="${img.width}" height="${img.height}"${img.mirror?` transform="translate(${img.x} ${img.y}) scale(-1 1)"`:''}/>`).join('');
 }
-function update(dt){state.playSeconds+=dt;recordLevelTimes();balancePaintClock+=dt;const buffTime=Math.min(dt,state.events.frenzy),span=dt+6*buffTime;earn(baseCps()*span);updateEvents(dt);updateGoldRain(dt);driveGoldenDance(dt);driveTalk(dt);driveWorkers(dt);driveRateRoll(dt);displayed+=(state.apples-displayed)*(1-Math.exp(-dt*14));if(Math.abs(state.apples-displayed)<.05)displayed=state.apples;saveClock+=dt;if(saveClock>=2){saveClock=0;save()}render()}
+function setupConstructionArtwork(){
+ const art=FACTORY_BUILD_ART,scene=$('constructionScene');
+ scene.setAttribute('width',art.width);scene.setAttribute('height',art.height);scene.setAttribute('viewBox',`0 0 ${art.width} ${art.height}`);
+ scene.innerHTML=art.paintOrder.map(step=>{const part=art.parts.find(p=>p.step===step);return `<g data-build-step="${step}" data-figma-node="${part.node}" class="${step?'build-part':'build-base'}">${constructionImages(part)}</g>`}).join('');
+}
+function renderConstruction(){
+ const construction=state.phase!=='operation';
+ document.querySelector('.phone').classList.toggle('construction-phase',construction);
+ $('constructionPanel').hidden=!construction;
+ document.querySelectorAll('#testLucky,#testGolden,#testApples,#spawnGrid button').forEach(button=>button.disabled=construction);
+ if(!construction)return;
+ FACTORY_BUILD_ART.parts.forEach(part=>{if(part.step)$('constructionScene').querySelector(`[data-build-step="${part.step}"]`).classList.toggle('is-built',state.buildClicks>=part.threshold)});
+ const partsComplete=state.buildClicks>=44;
+ $('buildFactory').disabled=state.phase==='ready'||(!partsComplete&&state.buildClicks+constructionFlights.size>=44);
+}
+const constructionFlights=new Set();
+const constructionDust=new Set();
+let constructionDustId=0;
+function showConstructionDust(x,y,kind='normal',sizeOverride=null){
+ if(matchMedia('(prefers-reduced-motion: reduce)').matches)return
+ const scale=document.querySelector('.phone').clientWidth/390;
+ const outer=kind==='renovationOuter',renovating=kind==='renovation'||outer,completed=kind==='final',partDone=kind==='part',size=sizeOverride??(outer?2.1:renovating?1.4:completed?1.5:partDone?1.2:.9);
+ const dust=document.createElement('div');dust.className='construction-dust';dust.setAttribute('aria-hidden','true');dust.style.cssText=`left:${x}px;top:${y}px;--smoke-size:${112*scale*size}px;--smoke-drift:${(Math.random()-.5)*12*scale}px`;
+ const id='construction-cloud-'+(++constructionDustId);
+ // Each independently drifting cloud is a connected cluster of round lobes.
+ const count=outer?4+Math.floor(Math.random()*3):renovating?3+Math.floor(Math.random()*2):completed?10+Math.floor(Math.random()*6):partDone?6+Math.floor(Math.random()*5):2+Math.floor(Math.random()*4),rotation=Math.random()*Math.PI*2;
+ const nearby=Math.min(count,2+Math.floor(Math.random()*2));
+ dust.dataset.kind=kind;dust.dataset.clouds=String(count);
+ const cluster=(x,y,dx,dy,small=false)=>{
+  const duration=.85+Math.random()*.65,delay=Math.random()*.12,lobes=small?2:3+Math.floor(Math.random()*3);
+  const body=Array.from({length:lobes},(_,i)=>{
+   const a=i/lobes*Math.PI*2,r=small?2+Math.random()*1.5:6+Math.random()*3,offset=small?1.5:4+Math.random()*2;
+   return `<circle cx="${Math.cos(a)*offset}" cy="${Math.sin(a)*offset*.8}" r="${r}"><animate attributeName="r" from="${r*.8}" to="${r*1.2}" begin="${delay}s" dur="${duration}s" fill="freeze"/></circle>`;
+  }).join('');
+  return `<g class="construction-smoke-cluster" transform="translate(${x} ${y})" opacity="0"><animateTransform attributeName="transform" type="translate" from="${x} ${y}" to="${x+dx} ${y+dy}" begin="${delay}s" dur="${duration}s" calcMode="spline" keyTimes="0;1" keySplines=".15 .4 .55 1" fill="freeze"/><animate attributeName="opacity" values="0;.9;.7;0" keyTimes="0;.12;.55;1" begin="${delay}s" dur="${duration}s" fill="freeze"/>${body}</g>`;
+ };
+ let circles=Array.from({length:count},(_,i)=>{
+  const angle=i<nearby?rotation+(i-(nearby-1)/2)*(.2+Math.random()*.2):Math.random()*Math.PI*2,spread=renovating?10+Math.random()*8:i<nearby?21+Math.random()*6:18+Math.random()*20,distance=renovating?12+Math.random()*8:12+Math.random()*27;
+  return cluster(Math.cos(angle)*spread,Math.sin(angle)*spread*.7,Math.cos(angle)*distance,Math.sin(angle)*distance*.7-3-Math.random()*6);
+ }).join('');
+ for(let i=0,n=renovating?0:Math.floor(Math.random()*3);i<n;i++)circles+=cluster((Math.random()-.5)*8,(Math.random()-.5)*5,(Math.random()-.5)*12,-6-Math.random()*8,true);
+
+ dust.innerHTML=`<svg class="construction-smoke" viewBox="-65 -65 130 130" overflow="visible"><defs><filter id="${id}" x="-50%" y="-50%" width="200%" height="200%" color-interpolation-filters="sRGB"><feMorphology in="SourceAlpha" operator="dilate" radius="${.65*.9/size}" result="edge"/><feFlood flood-color="#a5a5a5"/><feComposite in2="edge" operator="in"/><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><g fill="#fafafa" filter="url(#${id})">${circles}</g></svg>`;
+ document.body.append(dust);const effect={element:dust,timer:null};constructionDust.add(effect);
+ effect.timer=setTimeout(()=>{dust.remove();constructionDust.delete(effect)},1750);
+}
+
+function showFarmRebuildDust(){
+ if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+ const art=$('factoryArt').getBoundingClientRect(),scale=art.width/FACTORY_BUILD_ART.width;
+ // Stage 0 bounds include the entire floor; target the actual building body instead.
+ const targets=[[104,86],...FACTORY_BUILD_ART.parts.filter(p=>p.step>0).map(p=>{const [x,y,w,h]=p.bounds;return [x+w/2,y+h/2]})];
+ targets.forEach(([x,y],i)=>showConstructionDust(art.left+x*scale,art.top+y*scale,'renovation',[.75,1.1,1.35][i%3]*(.9+Math.random()*.2)));
+ const perimeter=[[60,55],[100,35],[140,60],[55,115],[90,145],[145,155],[195,140]];
+ perimeter.forEach(([x,y],i)=>showConstructionDust(art.left+x*scale,art.top+y*scale,'renovationOuter',[2,.9,1.65,.75,1.9,1,1.55][i]*(.9+Math.random()*.2)));
+}
+function clearConstructionFlights(){for(const effect of constructionDust){clearTimeout(effect.timer);effect.element.remove()}constructionDust.clear();for(const flight of constructionFlights){flight.cancelled=true;flight.animation?.cancel();flight.image.remove()}constructionFlights.clear()}
+function buildFactory(){
+ if(state.phase==='operation'&&state.tutorial==='start'){setTutorialStep('click');return}
+ if(state.phase!=='construction')return;
+ if(state.buildClicks>=44){const scene=$('constructionScene').getBoundingClientRect(),scale=scene.width/FACTORY_BUILD_ART.width;showConstructionDust(scene.left+112*scale,scene.top+80*scale,'final');state.buildClicks=BUILD_CLICKS_REQUIRED;state.phase='ready';save();render();showConstructionComplete();return}
+ if(state.buildClicks+constructionFlights.size>=44)return;
+ const session=state,button=$('buildFactory'),source=button.querySelector('img').getBoundingClientRect();
+ const part=FACTORY_BUILD_ART.parts.find(p=>p.step===Math.floor((state.buildClicks+constructionFlights.size)/4)+1);
+ const scene=$('constructionScene').getBoundingClientRect(),[x,y,w,h]=part.bounds,scale=scene.width/FACTORY_BUILD_ART.width;
+ const image=document.createElement('img');image.src='img/svg/setting.svg';image.className='construction-gear-flight';image.alt='';image.setAttribute('aria-hidden','true');
+ const size=source.width,startX=source.left+source.width/2,startY=source.top+source.height/2;
+ const endX=scene.left+(x+w/2)*scale,endY=scene.top+(y+h/2)*scale;
+ image.style.cssText=`left:${startX-size/2}px;top:${startY-size/2}px;width:${size}px;height:${size}px`;
+ document.body.append(image);const flight={image,animation:null,cancelled:false};constructionFlights.add(flight);
+ const arrive=()=>{
+  image.remove();constructionFlights.delete(flight);
+  if(flight.cancelled||state!==session||state.phase!=='construction')return;
+  state.buildClicks=Math.min(BUILD_CLICKS_REQUIRED,state.buildClicks+1);
+  showConstructionDust(endX,endY,state.buildClicks%4===0?'part':'normal');
+  save();render();
+  if(state.buildClicks%4===0&&!matchMedia('(prefers-reduced-motion: reduce)').matches)$('constructionScene').querySelector(`[data-build-step="${state.buildClicks/4}"]`).animate([{transform:'scale(1)'},{transform:'scale(1.025)'},{transform:'scale(1)'}],{duration:180});
+  if(state.phase==='ready')showConstructionComplete();
+ };
+ if(matchMedia('(prefers-reduced-motion: reduce)').matches){arrive();return}
+ button.animate([{transform:'scale(.97)'},{transform:'scale(1)'}],{duration:130});
+ flight.animation=image.animate([
+  {transform:'translate(0,0) scale(1) rotate(0deg)',opacity:1},
+  {transform:`translate(${(endX-startX)*.35-18}px,${(endY-startY)*.55}px) scale(.85) rotate(100deg)`,opacity:1,offset:.5},
+  {transform:`translate(${endX-startX}px,${endY-startY}px) scale(.3) rotate(220deg)`,opacity:.3}
+ ],{duration:430,easing:'cubic-bezier(.3,.1,.5,1)',fill:'forwards'});
+ flight.animation.finished.then(arrive,()=>{});
+ renderConstruction();
+}
+function startOperation(){
+ if(state.phase!=='ready')return;
+ const artwork=$('factoryArt'),previous=artwork.getBoundingClientRect();
+ clearTimeout(toastTimer);$('toast').classList.remove('show');
+ if(state.milestoneTimes.construction===null)state.milestoneTimes.construction=state.playSeconds;
+ resetPurchaseSpeech();state.tutorial='start';state.tutorialTime=0;state.phase='operation';state.buildClicks=BUILD_CLICKS_REQUIRED;state.operationSeconds=0;state.guaranteedGold=freshGuaranteedGold();state.events=freshEvents();
+ bulk=1;save();render();
+ if(!matchMedia('(prefers-reduced-motion: reduce)').matches){
+  const current=artwork.getBoundingClientRect();artwork.getAnimations().forEach(a=>a.cancel());
+  const move=artwork.animate([{transform:`translate(${previous.left-current.left}px,${previous.top-current.top}px)`},{transform:'translate(0,0)'}],{duration:650,easing:'cubic-bezier(.2,.8,.3,1)'});move.id='factory-phase-transition';
+ }
+ speakTutorial(TUTORIAL_LINES.start);
+}
+function showConstructionComplete(){startOperation()}
+$('constructionCompleteDialog').addEventListener('cancel',e=>e.preventDefault());
+$('beginOperation').onclick=()=>{$('constructionCompleteDialog').close();startOperation()};
+$('buildFactory').onclick=buildFactory;
+function update(dt){
+ state.playSeconds+=dt;
+ updateConstructionGuide(dt);updateTutorial(dt);updateFarmGoalGuide(dt);driveTalk(dt);
+ if(state.phase==='operation'){
+  state.operationSeconds+=dt;balancePaintClock+=dt;const buffTime=Math.min(dt,state.events.frenzy),span=dt+6*buffTime;
+  earn(baseCps()*span);if(!tutorialActive())updateEvents(dt);updateGoldRain(dt);driveGoldenDance(dt);driveWorkers(dt);driveRateRoll(dt);
+  displayed+=(state.apples-displayed)*(1-Math.exp(-dt*14));if(Math.abs(state.apples-displayed)<.05)displayed=state.apples;
+ }
+ saveClock+=dt;if(saveClock>=2){saveClock=0;save()}render();
+}
 // A first rAF timestamp can precede script initialization. Never advance backwards.
 function frame(now){const dt=last===null?0:Math.max(0,Math.min((now-last)/1000,.25));last=now;if(!document.hidden)update(dt);requestAnimationFrame(frame)}
 document.addEventListener('visibilitychange',()=>{last=null;save()});window.addEventListener('pagehide',save);
 window.advanceTime=ms=>{for(let left=ms;left>0;left-=50)update(Math.min(left,50)/1000)};
-window.render_game_to_text=()=>JSON.stringify({apples:state.apples,total:state.total,playSeconds:state.playSeconds,guaranteedGold:state.guaranteedGold,factory:factoryProgress(),factorySteps:state.factorySteps,gifted:state.gifted,events:state.events,goldenClicks:state.goldenClicks,globalMultiplier:upgradeEffects().global,cps:cps(),clickPower:clickPower(),bulk,buildings:BUILDINGS.map((b,i)=>({name:b.name,owned:state.owned[i],price:buildingCost(i),visible:visible(i)})),upgrades:state.upgrades,affordableUpgrade:offers().find(u=>u.price<=state.apples)?.id||null,prizes:state.prizes,fishUpgradeOpen:$('fishUpgradeDialog').open,upgradeFish,nextFishUpgrade:upgradeFish===null?null:fishUpgrade(upgradeFish)?.id||null,wardrobeOpen,outfit:state.outfit,wardrobeSelected,wardrobeCategory:wardrobeMode,shopOpen:$('shopDialog').open,vendingItems:offers().slice(0,9).map(u=>({id:u.id,name:u.name,price:u.price,affordable:state.apples>=u.price})),selectedItem});
-render();requestAnimationFrame(frame);
+window.render_game_to_text=()=>JSON.stringify({version:'1.0.47',language:GameI18n.language,phase:state.phase,construction:constructionProgress(),tutorial:state.tutorial,introRecruit:state.introRecruit,apples:state.apples,total:state.total,playSeconds:state.playSeconds,milestoneTimes:state.milestoneTimes,operationSeconds:state.operationSeconds,guaranteedGold:state.guaranteedGold,factory:{...factoryProgress(),initialUpgradeCount:initialFarmCount(),firstUpgradeAcknowledged:state.firstUpgradeAcknowledged,enhancementLevel:Math.max(1,state.upgrades.length-2)},recruitGoal:{count:employeeCount(),choice:state.recruitGoalChoice,guide:state.recruitGoalGuide},events:state.events,globalMultiplier:upgradeEffects().global,cps:cps(),clickPower:clickPower(),bulk,buildings:BUILDINGS.map((b,i)=>({name:b.name,owned:state.owned[i],price:buildingCost(i),visible:visible(i)})),upgrades:state.upgrades,nextUpgrade:nextFactoryItem()?.id||null,wardrobeOpen,outfit:state.outfit,constructionGuide:$('purchaseSpeech').hidden?null:$('speechMeasure').textContent,constructionCompleteOpen:$('constructionCompleteDialog').open,factoryUpgradeOpen:$('factoryUpgradeDialog').open});
+setupConstructionArtwork();render();if(state.phase==='ready')showConstructionComplete();else resumeTutorial();showFarmLevelComplete();if(FARM_UPGRADE_LINES[state.farmUpgradeGuide])speakTutorial(FARM_UPGRADE_LINES[state.farmUpgradeGuide]);if(!tutorialActive()&&FARM_GOAL_LINES[state.recruitGoalGuide])speakTutorial(FARM_GOAL_LINES[state.recruitGoalGuide]);requestAnimationFrame(frame);
 // Commit the initial normal/buffed state before enabling color transitions.
 requestAnimationFrame(()=>requestAnimationFrame(()=>document.documentElement.classList.remove('game-booting')));
 
@@ -1348,7 +1578,7 @@ document.addEventListener('selectstart',event=>event.preventDefault());
 document.addEventListener('contextmenu',event=>event.preventDefault());
 
 // Item catalogue (DEMO): every upgrade in the game, cheapest first, with the
-// same blurb the vending machine shows. Display only — nothing is for sale
+// same effect definitions as the factory reinforcement window. Display only — nothing is for sale
 // here, and owning one only changes how its tile reads.
 const CATALOG=[...UPGRADES].sort((a,b)=>a.price-b.price);
 let catalogItem=null;
@@ -1364,12 +1594,12 @@ function renderCatalog(){
  $('catalogDetail').hidden=!u;
  if(u){setText($('catalogName'),u.name);setText($('catalogPrice'),number(u.price));
   setText($('catalogDescription'),itemDescription(u));
-  const owned=state.upgrades.includes(u.id),open=unlocked(u);
-  setText($('catalogUnlock'),`解锁条件：${itemUnlock(u)}`);
-  $('catalogUnlock').classList.toggle('met',open);
+  const owned=state.upgrades.includes(u.id);
+  setText($('catalogUnlock'),'按价格顺序升级，无需解锁');
+  $('catalogUnlock').classList.add('met');
   const status=$('catalogStatus');
-  setText(status,owned?'已拥有':isFishUpgrade(u)?(open?'已解锁 · 在鱼人牌子升级':'未解锁'):u.kind==='global'?'全体强化 · 在工厂升级':'预留扭蛋机');
-  status.dataset.state=owned?'owned':open?'open':'locked'}
+  setText(status,owned?'已拥有':'在农场升级');
+  status.dataset.state=owned?'owned':'open'}
 }
 function buildCatalog(){
  if($('catalogGrid').children.length)return;
@@ -1388,7 +1618,7 @@ function buildCatalog(){
 }
 function openCatalog(){buildCatalog();catalogItem=null;returnFocus=document.activeElement;$('catalogDialog').showModal();renderCatalog();$('closeCatalog').focus()}
 function closeCatalog(){$('catalogDialog').close();returnFocus?.focus()}
-$('openCatalog').onclick=openCatalog;
+
 $('closeCatalog').onclick=closeCatalog;
 $('catalogDialog').addEventListener('cancel',()=>returnFocus?.focus());
 $('catalogGrid').addEventListener('click',event=>{
@@ -1396,3 +1626,5 @@ $('catalogGrid').addEventListener('click',event=>{
  catalogItem=catalogItem===entry.dataset.item?null:entry.dataset.item;
  renderCatalog();
 });
+
+$('languageSwitch').onclick=()=>{save();GameI18n.switchLanguage()};

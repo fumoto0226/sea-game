@@ -703,7 +703,7 @@ function createItemUpgrades(buildings){
     "original": "Immobile spellcasting",
     "building": 7,
     "tier": 9,
-    "name": "母舰工厂"
+    "name": "母舰农场"
   },
   {
     "id": "tier-7-10",
@@ -1949,16 +1949,14 @@ function createItemUpgrades(buildings){
  }
 ];
  const fingers=[["Thousand fingers", 100000], ["Million fingers", 10000000], ["Billion fingers", 100000000], ["Trillion fingers", 1000000000], ["Quadrillion fingers", 10000000000], ["Quintillion fingers", 10000000000000], ["Sextillion fingers", 10000000000000000], ["Septillion fingers", 10000000000000000000], ["Octillion fingers", 10000000000000000000000], ["Nonillion fingers", 10000000000000000000000000], ["Decillion fingers", 10000000000000000000000000000], ["Undecillion fingers", 10000000000000000000000000000000]];
- const upgrades=[
-  ...supplies.slice().sort((a,b)=>a.price-b.price).slice(0,100).map(u=>({...u,kind:'global',earned:u.price/20})),
-  ...rows.map(u=>({...u,need:needs[u.tier],price:buildings[u.building].price*prices[u.tier],kind:'double',clickPercent:u.building>0&&u.tier<2?1:0})),
+ return [
+  ...supplies.map(u=>({...u,kind:'global',earned:u.price/20})),
+  {id:'finger',name:'兼职手套',original:'Reinforced index finger',building:0,need:1,price:100,kind:'double'},
+  {id:'cream',name:'护鳍乳霜',original:'Carpal tunnel prevention cream',building:0,need:1,price:500,kind:'double'},
+  {id:'hands',name:'双鳍开工',original:'Ambidextrous',building:0,need:10,price:10000,kind:'double'},
+  ...rows.map(u=>({...u,need:needs[u.tier],price:buildings[u.building].price*prices[u.tier],kind:'double'})),
   ...[{"id": "mentor-staff", "original": "Farmer grandmas", "building": 2, "name": "鱼人社员协作", "need": 15, "kind": "mentor"}, {"id": "mentor-4", "original": "Miner grandmas", "building": 3, "name": "国王鱼人协作", "need": 15, "kind": "mentor"}, {"id": "mentor-shark", "original": "Worker grandmas", "building": 4, "name": "鲨鱼鱼人协作", "need": 15, "kind": "mentor"}, {"id": "mentor-3", "original": "Banker grandmas", "building": 5, "name": "小丑鱼人协作", "need": 15, "kind": "mentor"}, {"id": "mentor-6", "original": "Priestess grandmas", "building": 6, "name": "变异鱼人协作", "need": 15, "kind": "mentor"}, {"id": "mentor-7", "original": "Witch grandmas", "building": 7, "name": "外星鱼人协作", "need": 15, "kind": "mentor"}, {"id": "mentor-5", "original": "Cosmic grandmas", "building": 8, "name": "海绵鱼人协作", "need": 15, "kind": "mentor"}, {"id": "mentor-9", "original": "Transmuted grandmas", "building": 9, "name": "鱼神协作", "need": 15, "kind": "mentor"}].map(u=>({...u,price:buildings[u.building].price*50})),
-  ...[{id:'finger',price:100,need:1},{id:'cream',price:500,need:1},{id:'hands',price:10000,need:10},...fingers.map(([,price],i)=>({id:'fingers-'+i,price,need:i===0?25:i*50}))].map((slot,i)=>({...slot,building:0,...(i<12?{kind:'fingers',synergyIndex:i,name:i===0?'全员搭把手':`全员协作 ${i}`,factor:i===0?1:i===1?5:i===2?10:20}:{kind:'fish-global',power:i-11,name:`全体协作 ${i-11}`} )})),
+  ...fingers.map(([original,price],i)=>({id:'fingers-'+i,name:i===0?'全员搭把手':`全员协作 ${i}`,original,price,building:0,need:i===0?25:i*50,kind:'fingers',factor:i===0?1:i===1?5:i===2?10:20})),
+  ...['塑料','钢铁','钛合金','精金','神秘金属','幻金','愿望合金','幻想钢','永不碎','秘银','科技黑曜石','等离子石','奇迹石','以太冰','全能塑料'].map((name,i)=>({id:'mouse-'+i,name:name+'点击器',price:5e4*100**i,handmade:1e3*100**i,kind:'mouse'}))
  ];
- // Last three upgrades of every fish add a global completion benefit.
- for(let building=0;building<buildings.length;building++){
-  const tail=upgrades.filter(u=>u.building===building&&['double','mentor','fingers','fish-global'].includes(u.kind)).sort((a,b)=>a.price-b.price).slice(-3);
-  tail.forEach((u,i)=>{if(u.kind==='fish-global')u.power=i+1;else u.globalBonus=i+1});
- }
- return upgrades;
 }

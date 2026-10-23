@@ -1,5 +1,6 @@
 <svg width="131" height="52" viewBox="0 0 131 52" fill="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-<g filter="url(#filter0_d_645_18412)">
+<use xlink:href="#stroke0_645_18412" fill="#000" transform="translate(0 .75)"/>
+<g>
 <use xlink:href="#stroke0_645_18412" fill="white"/>
 <use xlink:href="#stroke0_645_18412" fill="#F8F09D"/>
 <use xlink:href="#stroke0_645_18412" fill="#ECF381"/>

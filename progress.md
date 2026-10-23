@@ -600,3 +600,9 @@ Validation: Standard game client two iterations; custom full130-click flow, paus
 - 同步updateTorsoMaterial中每帧将upperSkin放在真实躯干填色后一位的修复，防止波吉塔尾巴等额外图层让裤子纹理露到腰线以上；更新服装规则文档并重建embed-bundle。保留游戏地面锚定、走路、说话/狂潮驱动与衣柜宿主接口。
 - 新增针对active upstream的patterned-pants-layering回归，覆盖普通/奶鱼/波吉塔/外星及两套体型，验证贴片顺序/肤色/裁切和换普通裤后隐藏。原decoration-layering测试通过。
 - 版本/首页/缓存/render_game_to_text同步1.0.48。技能客户端执行并查看截图；实际srcdoc衣柜中波吉塔/奶鱼/外星+拼贴裤顺序正确，存档刷新恢复，宿主说话/狂潮API完整，无JS报错，波吉塔/奶鱼衣柜截图检查通过。源yuren未修改。
+
+## v1.0.49
+- 用户报告线上初始房子f000未加载，明确仅处理第一阶段，不改经营动画背景。
+- f000原文件约1.8KB，问题不是该文件过大：此前初始constructionScene为空，等待game.js执行后才创建外部SVG image。改为首屏HTML内嵌f000矢量及原坐标/视口，setupConstructionArtwork复用首屏markup，彻底取消f000独立网络请求，首屏无需等角色包和游戏脚本才有房子。
+- 新增scripts/embed-construction-base.cjs从原f000和factory-build-data重建内嵌基础图，避免手动维护两份图形；反复生成幂等。原SVG及第二阶段资源保持原样。
+- 版本/首页/缓存/render_game_to_text统一1.0.49。技能客户端执行并查看截图；Chrome禁用JS且阻断f000请求仍可见完整房子，正常JS初始化后保持内嵌且零f000请求，4次建造显示传送带，无JS报错。已检查初始化前和建造后截图。

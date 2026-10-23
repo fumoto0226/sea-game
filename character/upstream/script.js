@@ -2371,6 +2371,11 @@ function updateTorsoMaterial(node,warp) {
     torsoMaterial.upperClip.setAttribute('points',
       [corner(-1,0),corner(1,0),corner(1,2000),corner(-1,2000)].join(' '));
     torsoMaterial.upperSkin.setAttribute('d',node.getAttribute('d'));
+    // Sit immediately on top of the torso itself. Anything inserted at the
+    // front of the body layer since — Pochita's tail, for one — shifts the
+    // torso down the list, and a patch left behind it covers nothing.
+    if(torsoMaterial.upperSkin.previousSibling!==node)
+      node.parentNode.insertBefore(torsoMaterial.upperSkin,node.nextSibling);
   }
 }
 function redTrianglePath(warp) {

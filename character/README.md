@@ -21,3 +21,7 @@ The active runtime is `upstream/script.js`, packaged by `build-embed.py`. Clothi
 Host APIs: `characterWardrobeReady()`, `getCharacterOutfit()`, `restoreCharacterOutfit(outfit)`, and `toggleCharacterGarment(category,id)`. Saved outfits are validated against the actual decoration catalog. The game stores `state.outfit`; old saves start in milk-frog skin with no hat. Green tile fill means worn (including suit components), purple outline means most recently clicked. Removing a suit clears its garments while retaining the current skin per source rules.
 
 Wardrobe preview mode uses a full-height iframe from the top of the phone, with a body.wardrobe-preview child layout. The preview bottom stays at68% of phone height before its unchanged width-based padding: old23%+72%×62.5%, new95%×71.5789474%. This keeps soles/shadow stable and gives tall headgear room to extend under the fixed HUD instead of clipping at the old iframe top.
+
+## 2026-10-23 clothing rules sync (v1.0.48)
+
+Selectively synced the patterned wide-pants `upperSkin` sibling-order correction from `/Users/cenglujin/Documents/GitHub/yuren/script.js` and refreshed `CLOTHING_RULES.md`. The cover now follows the torso fill even when a skin inserts a tail into the body layer. SVG assets/catalog already match the source. Rebuilt `embed-bundle.js`; game-specific floor anchoring, walk and host APIs remain intact. Regression: `node character/tests/patterned-pants-layering.cjs` targets the active `upstream/script.js`.

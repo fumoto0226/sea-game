@@ -26,6 +26,10 @@
 - **所有今后新增套装都必须由可单独选取的现有分类组件组成**：在 `pieces` 中只引用对应 `decorationCatalog` 已注册的单品 ID，不做套装专用的隐藏部件；套装仅用于一键组合。`tests/suit-selection.cjs` 对所有套装遍历检查每个组件的独立选取、注册和图标。
 - `royal-suit`（红白国王套装）组合 `crown` 皇冠、`royal-coat` 国王礼服、`royal-trousers` 国王白长裤、`royal-shoes` 金扣礼鞋及 `royal-collar` 国王白毛领。毛领属于颈部，可另选、取下和混搭，服装仍保留。
 
+## 几何拼贴阔腿裤
+
+- 这条裤子不是单独一件衣服，而是**整个躯干填上布料图案**，再用 `torsoMaterial.upperSkin` 这块贴皮盖回腰线以上的部分。贴皮必须紧挨在躯干填色**后面一个兄弟节点**，所以每帧都重新 `insertBefore(node.nextSibling)`：任何往 body 图层最前面插的东西（比如波吉塔的尾巴）都会把躯干挤到后面，贴皮留在原地就什么也盖不住，裤子会一路长到脖子。
+
 ## 小丑
 
 - 套装 `clown-suit` 由两件组成：`clown` 小丑皮肤（纯白，`marks: true` 带出鼻尖上的红球和脸颊上的红点）和 `party-hat` 派对帽。

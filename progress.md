@@ -594,3 +594,9 @@ Validation: Standard game client two iterations; custom full130-click flow, paus
 - 用户要求大烟雾描边维持小烟雾细度，并保留大小错落。外沿滤镜膨胀半径按烟雾缩放反向补偿（0.65×0.9/size），实际屏幕描边厚度一致，不再随烟团大小变粗。
 - 部件模式交替小/中/较大，外围7处同样混合0.75–2倍尺寸，各自±10%随机扰动；保留整体装修覆盖与独立运动。
 - 版本/首页/缓存/render_game_to_text统一1.0.47。技能客户端执行；Chrome断言不同尺寸的滤镜实际描边厚度一致、19处模式和数量范围、确认触发/清理正常，无JS报错，大小错落截图检查通过。
+
+## v1.0.48
+- 用户要求按GitHub/yuren最新修改同步游戏衣柜，主要修复裤子穿模。对比源项目与实际runtime character/upstream：服装相关差异只有几何拼贴阔腿裤upperSkin顺序修复，全部SVG及服装素材已一致。
+- 同步updateTorsoMaterial中每帧将upperSkin放在真实躯干填色后一位的修复，防止波吉塔尾巴等额外图层让裤子纹理露到腰线以上；更新服装规则文档并重建embed-bundle。保留游戏地面锚定、走路、说话/狂潮驱动与衣柜宿主接口。
+- 新增针对active upstream的patterned-pants-layering回归，覆盖普通/奶鱼/波吉塔/外星及两套体型，验证贴片顺序/肤色/裁切和换普通裤后隐藏。原decoration-layering测试通过。
+- 版本/首页/缓存/render_game_to_text同步1.0.48。技能客户端执行并查看截图；实际srcdoc衣柜中波吉塔/奶鱼/外星+拼贴裤顺序正确，存档刷新恢复，宿主说话/狂潮API完整，无JS报错，波吉塔/奶鱼衣柜截图检查通过。源yuren未修改。
